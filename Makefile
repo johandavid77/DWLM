@@ -53,7 +53,7 @@ $(SRC)/xdg-shell-protocol.h:
 	$(WAYLAND_SCANNER) server-header \
 		$(WAYLAND_PROTOCOLS)/stable/xdg-shell/xdg-shell.xml $@
 
-$(SRC)/config.h:
+$(SRC)/config.h: $(SRC)/config.def.h
 	cp $(SRC)/config.def.h $@
 clean:
 	rm -f dwlm $(SRC)/*.o $(SRC)/*protocol.h $(SRC)/config.h
