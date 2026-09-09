@@ -1,0 +1,15 @@
+# build artifacts
+dwlm
+*.o
+*protocol.h
+config.h
+
+# editors / OS
+*~
+*.swp
+.DS_Store
+
+# packaging build dirs
+*.tar.gz
+# upstream dwl reference clone (not part of this repo)
+dwl-upstream/

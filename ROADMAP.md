@@ -1,0 +1,54 @@
+# DWLM Roadmap
+
+- [x] **Fase 1 — Setup y fork**
+  - [x] 1.1 Clonar dwl y crear la estructura del proyecto (src/, packaging/, config/)
+  - [x] 1.2 Elegir versión base: dwl v0.7 (wlroots 0.18, Debian Trixie)
+  - [x] 1.3 Copiar fuentes a src/ (dwlm.c, client.h, util, protocols, config.def.h)
+  - [x] 1.4 Renombrar binario y archivos a dwlm (Makefile, config.mk, dwlm.desktop, dwlm.1)
+  - [x] 1.5 Adecuar Makefile para wlroots configurable (0.18/0.20)
+  - [x] 1.6 Compilar y verificar que la base funciona (libwlroots-0.18-dev, zero warnings)
+  - [x] 1.7 git init + README inicial
+- [ ] **Fase 2 — Configuración híbrida**
+  - [ ] 2.1 Parser TOML (~300 SLOC, sin dependencias) para ~/.config/dwlm/config.toml
+  - [ ] 2.2 Unión con config.def.h (valores por defecto + overrides runtime)
+  - [ ] 2.3 Netting de los parámetros actuales (gaps, anchos de columna, keymaps)
+  - [ ] 2.4 Hot-reload (SIGHUP) y recarga de config sin reiniciar
+- [ ] **Fase 3 — Modo scroll (núcleo)**
+  - [x] 3.1 scroll.h: tipos ScrollCol/ScrollState y API pública
+  - [x] 3.2 Inclusión en dwlm.c (struct Monitor, Client.scol, hooks createmon/cleanupmon)
+  - [x] 3.3 Arrange: asignar clientes a columnas (nuevos después de la columna activa)
+  - [x] 3.4 Física de columnas: x(col) = Σ w[j] + gap·i; screen = col_x − viewport_x
+  - [x] 3.5 Ajuste automático del viewport al foco (+ clamps)
+  - [x] 3.6 Consume/expel (apilar/desapilar ventanas)
+  - [x] 3.7 Ciclo de anchos (presets 33/50/67%) y grow/shrink
+  - [x] 3.8 Centrado de columna
+  - [ ] 3.9 Scroll del viewport con gestos de touchpad y scroll vertical (normalizer)
+  - [ ] 3.10 Refinar animación/eases de viewport
+- [ ] **Fase 4 — Navegación y manipulación estilo Niri**
+  - [x] 4.1 Keybindings Niri-style (config.def.h) + fallos de layout dual (tile/scroll)
+  - [x] 4.2 focus first/last, movecol first/last
+  - [x] 4.3 Navegación vertical dentro de la columna (focusstack)
+  - [ ] 4.4 Zonas de trabajo / workspaces por columna del scroll (opcional)
+- [ ] **Fase 5 — Floating + modo híbrido**
+  - [ ] 5.1 Toggle floating por ventana/regla (ya heredado de dwl)
+  - [ ] 5.2 Reglas por app_id/título en config.toml
+  - [ ] 5.3 Ventanas flotantes centradas junto a la columna activa
+- [ ] **Fase 6 — Multi-monitor + workspaces**
+  - [ ] 6.1 ScrollState por monitor (ya estructurado)
+  - [ ] 6.2 Movimiento de columnas entre monitores
+  - [ ] 6.3 Barra de estado (dwl blocks) adaptada a scroll
+- [ ] **Fase 7 — Protocolos Wayland**
+  - [ ] 7.1 xdg-shell completo, layer-shell, XDG decoration (heredados)
+  - [ ] 7.2 XWayland en Debian (libxcb-cwm, libxcb-icccm)
+  - [ ] 7.3 optimized sync, ext-foreign-toplevel, idle-notify passthrough
+- [ ] **Fase 8 — Packaging**
+  - [ ] 8.1 Debian Trixie: packaging/debian/ (libwlroots-0.18-dev)
+  - [ ] 8.2 Arch: packaging/arch/PKGBUILD (wlroots0.20)
+  - [ ] 8.3 Void: packaging/void/template (wlroots0.20-devel)
+  - [ ] 8.4 CI fixture
+- [ ] **Fase 9 — Integración Noctalia + pulido**
+  - [ ] 9.1 Probar con Noctalia5
+  - [ ] 9.2 Estado del sistema (status bar, indicators, screen recording)
+  - [ ] 9.3 Documentación final y man page
+
+Total estimado: 24–34 h de desarrollo.
