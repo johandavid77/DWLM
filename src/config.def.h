@@ -150,6 +150,10 @@ static const Key keys[] = {
 	/* window stack inside a column (vertical) */
 	{ MODKEY,                    XKB_KEY_j,          focusstack,     {.i = +1} },
 	{ MODKEY,                    XKB_KEY_k,          focusstack,     {.i = -1} },
+	{ MODKEY,                    XKB_KEY_Up,         focusstack,     {.i = -1} },
+	{ MODKEY,                    XKB_KEY_Down,       focusstack,     {.i = +1} },
+	{ MODKEY,                    XKB_KEY_Left,       scroll_focus,   {.i = -1} },
+	{ MODKEY,                    XKB_KEY_Right,      scroll_focus,   {.i = +1} },
 
 	/* column widths */
 	{ MODKEY,                    XKB_KEY_r,          scroll_cycle_width, {0} },
