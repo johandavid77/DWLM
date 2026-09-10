@@ -1699,7 +1699,6 @@ mapnotify(struct wl_listener *listener, void *data)
 	Client *p = NULL;
 	Client *w, *c = wl_container_of(listener, c, map);
 	Monitor *m;
-	int i;
 
 	/* Create scene tree for this client and its border */
 	c->scene = client_surface(c)->data = wlr_scene_tree_create(layers[LyrTile]);
@@ -2235,6 +2234,8 @@ resize(Client *c, struct wlr_box geo, int interact)
 {
 	struct wlr_box *bbox;
 	struct wlr_box clip;
+	struct wlr_scene_node *surface_node;
+	struct wlr_scene_buffer *surface_buffer;
 
 	if (!c->mon || !client_surface(c)->mapped)
 		return;
@@ -2251,7 +2252,12 @@ resize(Client *c, struct wlr_box geo, int interact)
 	wlr_scene_rect_set_size(c->border[0], c->geom.width, c->geom.height);
 	wlr_scene_rect_set_corner_radius(c->border[0], corner_radius,
 			CORNER_LOCATION_ALL);
-	wlr_scene_buffer_set_corner_radius(c->scene_surface->buffer,
+
+	/* Round the actual surface buffer node (first child of the scene tree) */
+	surface_node = wl_container_of(c->scene_surface->children.next,
+			surface_node, link);
+	surface_buffer = wlr_scene_buffer_from_node(surface_node);
+	wlr_scene_buffer_set_corner_radius(surface_buffer,
 			c->isfullscreen ? 0 : corner_radius, CORNER_LOCATION_ALL);
 
 	/* this is a no-op if size hasn't changed */
