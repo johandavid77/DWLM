@@ -135,6 +135,7 @@ static const Key keys[] = {
 
 	/* launchers */
 	{ MODKEY,                    XKB_KEY_p,          spawn,          {.v = menucmd} },
+	{ MODKEY,                    XKB_KEY_Return,     spawn,          {.v = termcmd} },
 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_Return,     spawn,          {.v = termcmd} },
 
 	/* scroll mode: focus / move columns (works in tile layout too) */
