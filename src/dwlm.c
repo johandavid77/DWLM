@@ -29,6 +29,7 @@
 #include <wlr/types/wlr_gamma_control_v1.h>
 #include <wlr/types/wlr_idle_inhibit_v1.h>
 #include <wlr/types/wlr_idle_notify_v1.h>
+#include <wlr/types/wlr_foreign_toplevel_management_v1.h>
 #include <wlr/types/wlr_input_device.h>
 #include <wlr/types/wlr_keyboard.h>
 #include <wlr/types/wlr_keyboard_group.h>
@@ -148,6 +149,11 @@ typedef struct Client {
 	int isfloating, isurgent, isfullscreen;
 	int ismax, prevfloating; /* maximize toggle state */
 	uint32_t resize; /* configure serial of a pending resize */
+	struct wlr_foreign_toplevel_handle_v1 *fpt; /* NULL when unmanaged */
+	struct wl_listener fpt_act;
+	struct wl_listener fpt_max;
+	struct wl_listener fpt_full;
+	struct wl_listener fpt_close;
 } Client;
 
 typedef struct {
@@ -435,6 +441,12 @@ static void xwaylandready(struct wl_listener *listener, void *data);
 static struct wlr_xwayland *xwayland;
 static xcb_atom_t netatom[NetLast];
 #endif
+static struct wlr_foreign_toplevel_manager_v1 *fpt_manager;
+static void fpt_close(struct wl_listener *listener, void *data);
+static void fpt_maximize(struct wl_listener *listener, void *data);
+static void fpt_activate(struct wl_listener *listener, void *data);
+static void fpt_fullscreen(struct wl_listener *listener, void *data);
+static void setmax(Client *c, int max);
 
 /* configuration, allows nested code to access above variables */
 #include "config.h"
@@ -1489,9 +1501,14 @@ focusclient(Client *c, int lift)
 			client_set_border_color(old_c, bordercolor);
 
 			client_activate_surface(old, 0);
+			if (old_c->fpt)
+				wlr_foreign_toplevel_handle_v1_set_activated(old_c->fpt, 0);
 		}
 	}
 	printstatus();
+
+	if (c && c->fpt)
+		wlr_foreign_toplevel_handle_v1_set_activated(c->fpt, 1);
 
 	if (!c) {
 		/* With no client, all we have left is to clear focus */
@@ -1835,6 +1852,25 @@ mapnotify(struct wl_listener *listener, void *data)
 	}
 	if (c->isfloating)
 		scroll_place_float(c);
+	if (!client_is_unmanaged(c) && fpt_manager) {
+		c->fpt = wlr_foreign_toplevel_handle_v1_create(fpt_manager);
+		wlr_foreign_toplevel_handle_v1_set_title(c->fpt,
+				client_get_title(c));
+		wlr_foreign_toplevel_handle_v1_set_app_id(c->fpt,
+				client_get_appid(c));
+		if (c->mon)
+			wlr_foreign_toplevel_handle_v1_output_enter(c->fpt,
+					c->mon->wlr_output);
+		wlr_foreign_toplevel_handle_v1_set_activated(c->fpt,
+				focustop(selmon) == c);
+		wlr_foreign_toplevel_handle_v1_set_fullscreen(c->fpt,
+				c->isfullscreen);
+		wlr_foreign_toplevel_handle_v1_set_maximized(c->fpt, c->ismax);
+		LISTEN(&c->fpt->events.request_activate, &c->fpt_act, fpt_activate);
+		LISTEN(&c->fpt->events.request_close, &c->fpt_close, fpt_close);
+		LISTEN(&c->fpt->events.request_maximize, &c->fpt_max, fpt_maximize);
+		LISTEN(&c->fpt->events.request_fullscreen, &c->fpt_full, fpt_fullscreen);
+	}
 	printstatus();
 
 unset_fullscreen:
@@ -2030,13 +2066,14 @@ moveresize(const Arg *arg)
 	}
 }
 
-void
-togglemax(const Arg *arg)
+static void
+setmax(Client *c, int max)
 {
-	Client *c = focustop(selmon);
 	if (!c || client_is_unmanaged(c) || c->isfullscreen)
 		return;
 
+	if (max == c->ismax)
+		return;
 	if (c->ismax) {
 		c->ismax = 0;
 		if (c->prevfloating) {
@@ -2051,8 +2088,19 @@ togglemax(const Arg *arg)
 		setfloating(c, 1);
 		resize(c, c->mon->w, 0);
 	}
+	if (c->fpt)
+		wlr_foreign_toplevel_handle_v1_set_maximized(c->fpt, !!max);
 	arrange(c->mon);
 	printstatus();
+}
+
+void
+togglemax(const Arg *arg)
+{
+	Client *c = focustop(selmon);
+	if (!c)
+		return;
+	setmax(c, !c->ismax);
 }
 
 void
@@ -2481,6 +2529,8 @@ setfullscreen(Client *c, int fullscreen)
 		return;
 	c->bw = fullscreen ? 0 : borderpx;
 	client_set_fullscreen(c, fullscreen);
+	if (c->fpt)
+		wlr_foreign_toplevel_handle_v1_set_fullscreen(c->fpt, fullscreen);
 	wlr_scene_node_reparent(&c->scene->node, layers[c->isfullscreen
 			? LyrFS : c->isfloating ? LyrFloat : LyrTile]);
 
@@ -2494,6 +2544,60 @@ setfullscreen(Client *c, int fullscreen)
 	}
 	arrange(c->mon);
 	printstatus();
+}
+
+static Client *
+fpt_client(struct wlr_foreign_toplevel_handle_v1 *h)
+{
+	Client *c;
+
+	wl_list_for_each(c, &clients, link)
+		if (c->fpt == h)
+			return c;
+	return NULL;
+}
+
+static void
+fpt_activate(struct wl_listener *listener, void *data)
+{
+	struct wlr_foreign_toplevel_handle_v1_activated_event *event = data;
+	Client *c = fpt_client(event->toplevel);
+
+	if (!c)
+		return;
+	focusclient(c, 1);
+	arrange(selmon);
+	printstatus();
+}
+
+static void
+fpt_close(struct wl_listener *listener, void *data)
+{
+	struct wlr_foreign_toplevel_handle_v1 *h = data;
+	Client *c = fpt_client(h);
+
+	if (c)
+		client_send_close(c);
+}
+
+static void
+fpt_maximize(struct wl_listener *listener, void *data)
+{
+	struct wlr_foreign_toplevel_handle_v1_maximized_event *event = data;
+	Client *c = fpt_client(event->toplevel);
+
+	if (c)
+		setmax(c, event->maximized);
+}
+
+static void
+fpt_fullscreen(struct wl_listener *listener, void *data)
+{
+	struct wlr_foreign_toplevel_handle_v1_fullscreen_event *event = data;
+	Client *c = fpt_client(event->toplevel);
+
+	if (c)
+		setfullscreen(c, event->fullscreen);
 }
 
 void
@@ -2545,6 +2649,14 @@ setmon(Client *c, Monitor *m, uint32_t newtags)
 		return;
 	c->mon = m;
 	c->prev = c->geom;
+	if (c->fpt) {
+		if (oldmon)
+			wlr_foreign_toplevel_handle_v1_output_leave(c->fpt,
+					oldmon->wlr_output);
+		if (m)
+			wlr_foreign_toplevel_handle_v1_output_enter(c->fpt,
+					m->wlr_output);
+	}
 
 	/* Scene graph sends surface leave/enter events on move and resize */
 	if (oldmon)
@@ -2780,6 +2892,8 @@ setup(void)
 	LISTEN_STATIC(&output_mgr->events.apply, outputmgrapply);
 	LISTEN_STATIC(&output_mgr->events.test, outputmgrtest);
 
+	fpt_manager = wlr_foreign_toplevel_manager_v1_create(dpy);
+
 	/* Make sure XWayland clients don't connect to the parent X server,
 	 * e.g when running in the x11 backend or the wayland backend and the
 	 * compositor has Xwayland support */
@@ -2962,6 +3076,10 @@ unmapnotify(struct wl_listener *listener, void *data)
 	} else {
 		wl_list_remove(&c->link);
 		setmon(c, NULL, 0);
+		if (c->fpt) {
+			wlr_foreign_toplevel_handle_v1_destroy(c->fpt);
+			c->fpt = NULL;
+		}
 		wl_list_remove(&c->flink);
 		scroll_detach(c);
 	}
@@ -3081,6 +3199,12 @@ void
 updatetitle(struct wl_listener *listener, void *data)
 {
 	Client *c = wl_container_of(listener, c, set_title);
+	if (c->fpt) {
+		wlr_foreign_toplevel_handle_v1_set_title(c->fpt,
+				client_get_title(c));
+		wlr_foreign_toplevel_handle_v1_set_app_id(c->fpt,
+				client_get_appid(c));
+	}
 	if (c == focustop(c->mon))
 		printstatus();
 }

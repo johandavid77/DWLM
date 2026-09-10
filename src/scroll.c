@@ -755,6 +755,55 @@ scroll_focus_number(const Arg *arg)
 }
 
 void
+scroll_movecolmon(const Arg *arg)
+{
+	Client *sel, *c, *ctmp, *top;
+	ScrollCol *col, *act;
+	Monitor *target;
+	struct wl_list *after;
+
+	if (!selmon)
+		return;
+	if (selmon->lt[selmon->sellt]->arrange != scroll) {
+		tagmon(arg);
+		return;
+	}
+	sel = focustop(selmon);
+	if (!sel || !(col = sel->scol_col))
+		return;
+	if (wl_list_length(&mons) < 2)
+		return;
+	target = dirtomon(arg->i);
+	if (!target || target == selmon || !target->wlr_output->enabled)
+		return;
+
+	/* Unlink the whole column from this monitor's strip first, so the
+	 * arrange() inside setmon() can't detach its clients and free it. */
+	wl_list_remove(&col->link);
+	wl_list_for_each_safe(c, ctmp, &col->clients, scol)
+		setmon(c, target, c->tags);
+
+	if (target->lt[target->sellt]->arrange == scroll) {
+		/* keep the column as one unit next to the target's focused column */
+		Client *tsel = focustop(target);
+		act = tsel ? tsel->scol_col : NULL;
+		after = act ? &act->link : target->scroll.cols.prev;
+		wl_list_insert(after, &col->link);
+		if (!wl_list_empty(&col->clients)) {
+			top = wl_container_of(col->clients.next, top, scol);
+			focusclient(top, 1);
+		}
+	} else {
+		/* non-scroll target: detach every client from the column, which
+		 * frees the column once it becomes empty */
+		wl_list_for_each_safe(c, ctmp, &col->clients, scol)
+			scroll_detach(c);
+	}
+	arrange(target);
+	printstatus();
+}
+
+void
 scroll_place_float(Client *c)
 {
 	Monitor *m = c->mon;

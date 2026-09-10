@@ -96,6 +96,11 @@ void scroll_expel(const Arg *arg);
 /* Focus the window above/below within the focused column. arg->i: -1/+1. */
 void scroll_focus_up_down(const Arg *arg);
 
+/* Move the whole focused column (with its window stack) to the adjacent
+ * monitor in the direction arg->i. In non-scroll layouts falls back to
+ * tagmon(), so the same keys send the focused window to the next monitor. */
+void scroll_movecolmon(const Arg *arg);
+
 /* Focus the column at index arg->i (0-based); clamps to the last column.
  * In non-scroll layouts falls back to view() (workspace switch), so the
  * same keys behave as "go to workspace N" while tiling. */

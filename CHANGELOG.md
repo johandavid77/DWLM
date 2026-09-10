@@ -52,6 +52,19 @@ Todas las notas de cambio de DWLM se registran aquí.
   - Centrado de columna activa.
 - Keybindings estilo Niri en `src/config.def.h` con fallback de layout dual
   (las mismas teclas funcionan en tile y en scroll).
+- Movimiento de columnas entre monitores (Fase 6.2).
+  - Super+Shift+< / >: toda la columna enfocada (pila incluida) salta al
+    monitor adyacente. En scroll el destino inserta la columna junto a la
+    activa y enfoca su cima; en tile se degrada a tagmon.
+- XWayland (Fase 7.2): `config.mk` compila con `-DXWAYLAND` y `xcb xcb-icccm`;
+  verificado en VM lanzando xterm en la sesión Wayland (se mapea y renderiza
+  como cliente X11 vía Xwayland).
+- wlr-foreign-toplevel-management (Fase 7.3).
+  - Un handle por ventana mapeada: título y app_id al crear/map/title change,
+    estado activated (focus), maximized/fullscreen, output_enter/leave en
+    setmon, y requests activate/close/maximize/fullscreen del cliente.
+  - Verificado con un cliente FTM en la sesión: listó correctamente un xterm
+    (XWayland, `title='johan@dwlm: ~'` `app_id='XTerm'`) y un foot (`foot`).
 - Construcción con wlroots configurable (0.18 para Debian Trixie, 0.20 para
   Arch/Void) vía `WLRROOTS` en `config.mk`.
 - Renombrado de dwl → dwlm (binario, .desktop, man page).
@@ -60,8 +73,14 @@ Todas las notas de cambio de DWLM se registran aquí.
 - Tiling master-and-stack, monocle y layout flotante.
 - Layer-shell, xdg-decoration, output management, session lock, etc.
 - Reglas por app_id/título, tags, monitores.
+- Idle-notify passthrough (wlr_idle_notify_v1).
 
 ### Pendiente
-- XWayland habilitado por defecto (actualmente comentado en config.mk).
-- Packaging Debian (Fase 8).
-- Barra de estado / pulido Noctalia (Fases 6-9).
+- Ext-optimized-sync / ext-foreign-toplevel-list: sin soporte en
+  wlroots-0.18 (ext-optimized-sync) y diferido para el bar shell (la FTM
+  clásica ya cubre la integración).
+- Packaging (Fase 8): Debian Trixie + CI fixture (y PKGBUILD/template Void
+  sin probar).
+- Barra de estado: **proyecto nuevo en C++** (tipo Noctalia5), fuera de
+  dwlm; dwlm expone wlr-foreign-toplevel-management para su integración.
+- Pulido final y man page (Fase 9).

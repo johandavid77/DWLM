@@ -57,13 +57,27 @@
     - Al mapear una ventana flotante en modo scroll se centra en el área
       visible del viewport (anclada a pantalla).
 - [ ] **Fase 6 — Multi-monitor + workspaces**
-  - [ ] 6.1 ScrollState por monitor (ya estructurado)
-  - [ ] 6.2 Movimiento de columnas entre monitores
+  - [x] 6.1 ScrollState por monitor (cada Monitor guarda su ScrollState y strip)
+  - [x] 6.2 Movimiento de columnas entre monitores
+    - Super+Shift+< / >: la columna enfocada completa (con su pila de ventanas)
+      salta al monitor adyacente; vista scroll inserta la columna tras la
+      columna activa del destino y enfoca su cima; layout tile cae en tagmon.
   - [ ] 6.3 Barra de estado (dwl blocks) adaptada a scroll
+    - **Pospuesto**: la barra será un proyecto nuevo en C++ (tipo Noctalia5);
+      dwlm expone wlr-foreign-toplevel-management para facilitarlo.
 - [ ] **Fase 7 — Protocolos Wayland**
-  - [ ] 7.1 xdg-shell completo, layer-shell, XDG decoration (heredados)
-  - [ ] 7.2 XWayland en Debian (libxcb-cwm, libxcb-icccm)
+  - [x] 7.1 xdg-shell completo, layer-shell, XDG decoration (heredados)
+  - [x] 7.2 XWayland en Debian (config.mk ya activo: -DXWAYLAND + xcb/xcb-icccm;
+       probado con xterm en la sesión Wayland)
   - [ ] 7.3 optimized sync, ext-foreign-toplevel, idle-notify passthrough
+    - [x] wlr-foreign-toplevel-management_v1 (manager + handles por ventana:
+          título, app_id, activated/maximized/fullscreen, output enter/leave,
+          requests activate/close/maximize/fullscreen; verificado con un
+          cliente FTM en la sesión)
+    - [x] idle-notify passthrough (wlr_idle_notify_v1, heredado)
+    - [ ] ext-optimized-sync y ext-foreign-toplevel-list: sin soporte en
+          wlroots-0.18 (ext-optimized-sync) y para un futuro bar shell
+          (ext list) — la FTM clásica cubre ya la integración del bar
 - [ ] **Fase 8 — Packaging**
   - [ ] 8.1 Debian Trixie: packaging/debian/ (libwlroots-0.18-dev)
   - [ ] 8.2 Arch: packaging/arch/PKGBUILD (wlroots0.20)
