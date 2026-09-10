@@ -1602,8 +1602,10 @@ keypress(struct wl_listener *listener, void *data)
 	 * attempt to process a compositor keybinding. */
 	if (!locked && event->state == WL_KEYBOARD_KEY_STATE_PRESSED) {
 		for (i = 0; i < nsyms; i++) {
+			char _dbgname[64];
+			xkb_keysym_get_name(syms[i], _dbgname, sizeof(_dbgname));
 			fprintf(stderr, "DBGKEY keycode=%u sym=%s(0x%x) mods=0x%x\n",
-					event->keycode, xkb_keysym_get_name(syms[i]), syms[i], mods);
+					event->keycode, _dbgname, syms[i], mods);
 			handled = keybinding(mods, syms[i]) || handled;
 		}
 	}
