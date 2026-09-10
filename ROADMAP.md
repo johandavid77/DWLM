@@ -8,11 +8,12 @@
   - [x] 1.5 Adecuar Makefile para wlroots configurable (0.18/0.20)
   - [x] 1.6 Compilar y verificar que la base funciona (libwlroots-0.18-dev, zero warnings)
   - [x] 1.7 git init + README inicial
-- [ ] **Fase 2 — Configuración híbrida**
-  - [ ] 2.1 Parser TOML (~300 SLOC, sin dependencias) para ~/.config/dwlm/config.toml
-  - [ ] 2.2 Unión con config.def.h (valores por defecto + overrides runtime)
-  - [ ] 2.3 Netting de los parámetros actuales (gaps, anchos de columna, keymaps)
-  - [ ] 2.4 Hot-reload (SIGHUP) y recarga de config sin reiniciar
+- [x] **Fase 2 — Configuración híbrida**
+  - [x] 2.1 Parser TOML (~300 SLOC, sin dependencias) para ~/.config/dwlm/config.toml
+  - [x] 2.2 Unión con config.def.h (valores por defecto + overrides runtime)
+  - [x] 2.3 Mapeado de los parámetros actuales (borderpx, corner_radius, gaps,
+         clamps de ancho, presets, colores)
+  - [x] 2.4 Hot-reload (SIGHUP → flag → drenado en el loop principal) sin reiniciar
 - [ ] **Fase 3 — Modo scroll (núcleo)**
   - [x] 3.1 scroll.h: tipos ScrollCol/ScrollState y API pública
   - [x] 3.2 Inclusión en dwlm.c (struct Monitor, Client.scol, hooks createmon/cleanupmon)
