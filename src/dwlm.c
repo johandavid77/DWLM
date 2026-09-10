@@ -612,9 +612,12 @@ axisnotify(struct wl_listener *listener, void *data)
 			&& scroll_can_pan(selmon)) {
 		if (event->source == WL_POINTER_AXIS_SOURCE_CONTINUOUS)
 			d = event->delta * scroll_continuous_speed;
-		else
+		else {
 			d = event->delta_discrete * scroll_pixels_per_notch
 				/ WLR_POINTER_AXIS_DISCRETE_STEP;
+			if (!d) /* some devices (virtual pointers) only report delta */
+				d = event->delta * scroll_continuous_speed;
+		}
 		scroll_pan(selmon, d);
 		return; /* consumed: pan the strip instead of the client */
 	}
