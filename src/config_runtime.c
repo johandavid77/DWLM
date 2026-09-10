@@ -14,6 +14,9 @@
  * width_min    = 0.20         # grow/shrink clamps (fraction)
  * width_max    = 0.80
  * presets      = [0.33, 0.50, 0.67]
+ * mouse_scroll = 1            # wheel/touchpad pan the strip in scroll mode
+ * pixels_per_notch = 80.0     # strip px scrolled per wheel notch
+ * continuous_speed = 1.5      # sensitivity for touchpad/continuous deltas
  *
  * [colors]
  * root    = "#222222"
@@ -160,7 +163,16 @@ config_runtime_apply_key(const char *section, const char *key, const char *value
 				if (selmon && selmon->scroll.width_idx >= (int)n)
 					selmon->scroll.width_idx = 0;
 			}
-		}
+		} else if (!strcmp(key, "mouse_scroll")
+				&& !config_runtime_parse_int(value, &i))
+			scroll_mouse_scroll = i != 0;
+		else if (!strcmp(key, "pixels_per_notch")
+				&& !config_runtime_parse_double(value, &d))
+			scroll_pixels_per_notch = d;
+		else if (!strcmp(key, "continuous_speed")
+				&& !config_runtime_parse_double(value, &d)
+				&& d >= 0)
+			scroll_continuous_speed = d;
 	} else if (!strcmp(section, "colors")) {
 		if (!strcmp(key, "root"))
 			config_runtime_parse_color(value, rootcolor);
@@ -279,9 +291,12 @@ config_runtime_reload(void)
 
 	wlr_log(WLR_INFO, "[config] reloaded: borderpx=%u radius=%d gap=%.1f "
 			"outer=%.1f min=%.2f max=%.2f presets=%zu "
+			"mouse=%d ppn=%.1f speed=%.2f "
 			"root=%02X%02X%02X border=%02X%02X%02X focus=%02X%02X%02X",
 			borderpx, corner_radius, scroll_gap, scroll_outer_gap,
 			scroll_width_min, scroll_width_max, scroll_preset_count,
+			scroll_mouse_scroll, scroll_pixels_per_notch,
+			scroll_continuous_speed,
 			(unsigned)(rootcolor[0] * 255), (unsigned)(rootcolor[1] * 255),
 			(unsigned)(rootcolor[2] * 255),
 			(unsigned)(bordercolor[0] * 255), (unsigned)(bordercolor[1] * 255),

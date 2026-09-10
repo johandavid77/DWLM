@@ -46,6 +46,9 @@ static double scroll_width_max = 0.80;
 static double scroll_column_width = 0.50;     /* width (screen fraction) of new columns */
 static double scroll_preset_widths[8] = { 0.33, 0.50, 0.67 };
 static size_t scroll_preset_count = 3;
+static int scroll_mouse_scroll = 1;           /* wheel/touchpad pan the strip in scroll mode */
+static double scroll_pixels_per_notch = 80.0; /* strip px scrolled per wheel notch */
+static double scroll_continuous_speed = 1.5;  /* sensitivity for touchpad/continuous deltas */
 
 /* monitors */
 /* (x=-1, y=-1) is reserved as an "autoconfigure" monitor position indicator

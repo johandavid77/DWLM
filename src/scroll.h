@@ -71,6 +71,15 @@ void scroll_width(const Arg *arg);
 /* Bring the focused column to the center of the viewport. */
 void scroll_center(const Arg *arg);
 
+/* True when the strip overflows the window area (i.e. a wheel/touchpad pan
+ * would actually move the viewport). */
+int scroll_can_pan(Monitor *m);
+
+/* Pan the viewport by `delta` strip pixels, clamped to its bounds. The
+ * viewport is pinned on the next arrange() (the focus will not pull it
+ * back). Used by the mouse wheel / touchpad gesture handlers. */
+void scroll_pan(Monitor *m, double delta);
+
 /* Window management (Niri consume/expel):
  * - consume: stack the focused window into the column to its left.
  * - expel:   pop the focused window out of its column into a new one. */

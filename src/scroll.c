@@ -514,6 +514,36 @@ scroll_center(const Arg *arg)
 	printstatus();
 }
 
+/* Mouse wheel / touchpad pan -------------------------------------------- */
+
+int
+scroll_can_pan(Monitor *m)
+{
+	double lo, hi;
+
+	if (!m || !m->wlr_output->enabled)
+		return 0;
+	scroll_viewport_bounds(m, &lo, &hi);
+	return lo != hi;
+}
+
+void
+scroll_pan(Monitor *m, double delta)
+{
+	double lo, hi;
+
+	if (!m || !m->wlr_output->enabled)
+		return;
+	scroll_viewport_bounds(m, &lo, &hi);
+	m->scroll.viewport_x += delta;
+	if (m->scroll.viewport_x < lo)
+		m->scroll.viewport_x = lo;
+	else if (m->scroll.viewport_x > hi)
+		m->scroll.viewport_x = hi;
+	m->scroll.keep_viewport = 1;
+	arrange(m);
+}
+
 /* Window management ------------------------------------------------------ */
 
 void
