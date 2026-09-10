@@ -36,11 +36,28 @@ scroll_swap_list(struct wl_list *b1, struct wl_list *b2)
 		wl_list_insert(tmp.prev, b2);
 }
 
+/* Tiling area: the monitor work area inset by the outer gap */
+static void
+scroll_area(Monitor *m, struct wlr_box *a)
+{
+	int g = (int)scroll_outer_gap;
+	a->x = m->w.x + g;
+	a->y = m->w.y + g;
+	a->width = m->w.width - 2 * g;
+	a->height = m->w.height - 2 * g;
+	if (a->width < 1)
+		a->width = 1;
+	if (a->height < 1)
+		a->height = 1;
+}
+
 static double
 scroll_col_width(Monitor *m, ScrollCol *col)
 {
-	double w = col->width * m->w.width;
-	double max = m->w.width - 2 * scroll_gap;
+	struct wlr_box a;
+	scroll_area(m, &a);
+	double w = col->width * a.width;
+	double max = a.width - 2 * scroll_gap;
 	if (max < 1)
 		max = 1;
 	return w > max ? max : w;
@@ -50,8 +67,10 @@ scroll_col_width(Monitor *m, ScrollCol *col)
 static double
 scroll_col_x(Monitor *m, ScrollCol *col)
 {
+	struct wlr_box a;
+	scroll_area(m, &a);
 	ScrollCol *c;
-	double x = m->w.x + scroll_gap;
+	double x = a.x + scroll_gap;
 	wl_list_for_each(c, &m->scroll.cols, link) {
 		if (c == col)
 			return x;
@@ -64,12 +83,14 @@ scroll_col_x(Monitor *m, ScrollCol *col)
 static void
 scroll_viewport_bounds(Monitor *m, double *lo, double *hi)
 {
+	struct wlr_box a;
+	scroll_area(m, &a);
 	ScrollCol *c;
-	double s0 = m->w.x + scroll_gap;
+	double s0 = a.x + scroll_gap;
 	double s1 = s0;
 	wl_list_for_each(c, &m->scroll.cols, link)
 		s1 += scroll_col_width(m, c) + scroll_gap;
-	*lo = MAX(m->w.x, s1 - m->w.width);
+	*lo = MAX(a.x, s1 - a.width);
 	*hi = MAX(*lo, s0);
 }
 
@@ -77,6 +98,8 @@ scroll_viewport_bounds(Monitor *m, double *lo, double *hi)
 static void
 scroll_ensure_viewport(Monitor *m, ScrollCol *active)
 {
+	struct wlr_box a;
+	scroll_area(m, &a);
 	double lo, hi, vp;
 
 	scroll_viewport_bounds(m, &lo, &hi);
@@ -97,12 +120,12 @@ scroll_ensure_viewport(Monitor *m, ScrollCol *active)
 	}
 
 	vp = m->scroll.viewport_x;
-	if (scroll_col_x(m, active) - vp < m->w.x + scroll_gap)
-		vp = scroll_col_x(m, active) - (m->w.x + scroll_gap);
+	if (scroll_col_x(m, active) - vp < a.x + scroll_gap)
+		vp = scroll_col_x(m, active) - (a.x + scroll_gap);
 	if (scroll_col_x(m, active) + scroll_col_width(m, active) - vp
-			> m->w.x + m->w.width - scroll_gap)
+			> a.x + a.width - scroll_gap)
 		vp = scroll_col_x(m, active) + scroll_col_width(m, active)
-			- (m->w.x + m->w.width - scroll_gap);
+			- (a.x + a.width - scroll_gap);
 	if (vp < lo)
 		vp = lo;
 	else if (vp > hi)
@@ -176,17 +199,19 @@ scroll(Monitor *m)
 
 	/* 4. Lay out clients, stacked vertically inside their columns */
 	{
+		struct wlr_box a;
+		scroll_area(m, &a);
 		double vpx = m->scroll.viewport_x;
-		int yy = m->w.y;
+		int yy = a.y;
 		wl_list_for_each(col, &m->scroll.cols, link) {
 			int n = wl_list_length(&col->clients);
 			double colw = scroll_col_width(m, col);
 			int x = (int)(scroll_col_x(m, col) - vpx);
-			int ch = n ? (int)((m->w.height - scroll_gap * (n - 1)) / n) : 0;
+			int ch = n ? (int)((a.height - scroll_gap * (n - 1)) / n) : 0;
 			Client *cc;
 			if (ch < 1)
 				ch = 1;
-			yy = m->w.y;
+			yy = a.y;
 			wl_list_for_each(cc, &col->clients, scol) {
 				resize(cc, (struct wlr_box){.x = x, .y = yy,
 					.width = (int)colw, .height = ch}, 0);
@@ -255,8 +280,12 @@ scroll_resize_drag(Monitor *m, double cx, double cy)
 		return;
 
 	/* Tiled: follow the pointer as the column's right edge */
-	left = scroll_col_x(m, col) - m->scroll.viewport_x;
-	wf = (cx - left) / (double)m->w.width;
+	{
+		struct wlr_box a;
+		scroll_area(m, &a);
+		left = scroll_col_x(m, col) - m->scroll.viewport_x;
+		wf = (cx - left) / (double)a.width;
+	}
 	wf = MAX(scroll_width_min, MIN(scroll_width_max, wf));
 	col->width = wf;
 	arrange(m);

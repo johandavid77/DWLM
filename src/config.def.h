@@ -39,6 +39,7 @@ static const Layout layouts[] = {
 
 /* scroll mode tuning */
 static const double scroll_gap = 8.0;               /* px gap between columns/windows */
+static const double scroll_outer_gap = 12.0;        /* px margin around the tiling area */
 static const double scroll_column_width = 0.50;     /* width (screen fraction) of new columns */
 static const double scroll_preset_widths[] = { 0.33, 0.50, 0.67 };
 static const double scroll_width_min = 0.20;        /* grow/shrink clamps */
