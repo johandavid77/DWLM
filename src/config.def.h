@@ -49,6 +49,8 @@ static size_t scroll_preset_count = 3;
 static int scroll_mouse_scroll = 1;           /* wheel/touchpad pan the strip in scroll mode */
 static double scroll_pixels_per_notch = 80.0; /* strip px scrolled per wheel notch */
 static double scroll_continuous_speed = 1.5;  /* sensitivity for touchpad/continuous deltas */
+static int scroll_anim_ms = 250;              /* viewport animation duration (0 = snap) */
+static int scroll_anim_ease = 1;              /* 0: linear, 1: cubic ease-in-out */
 
 /* monitors */
 /* (x=-1, y=-1) is reserved as an "autoconfigure" monitor position indicator
@@ -129,6 +131,11 @@ static const enum libinput_config_tap_button_map button_map = LIBINPUT_CONFIG_TA
 	{ MODKEY|WLR_MODIFIER_SHIFT, SKEY,           tag,             {.ui = 1 << TAG} }, \
 	{ MODKEY|WLR_MODIFIER_CTRL|WLR_MODIFIER_SHIFT,SKEY,toggletag, {.ui = 1 << TAG} }
 
+/* focus the Nth column of the scroll strip (Alt+Num). In tile layouts the
+ * same keys fall back to switching workspace, i.e. "go to workspace N". */
+#define FOCUSNUM(KEY,TAG) \
+	{ MODKEY|WLR_MODIFIER_ALT, KEY, scroll_focus_number, {.i = TAG} }
+
 /* helper for spawning shell commands in the pre dwm-5.0 fashion */
 #define SHCMD(cmd) { .v = (const char*[]){ "/bin/sh", "-c", cmd, NULL } }
 
@@ -201,6 +208,17 @@ static const Key keys[] = {
 	TAGKEYS(          XKB_KEY_7, XKB_KEY_ampersand,                  6),
 	TAGKEYS(          XKB_KEY_8, XKB_KEY_asterisk,                   7),
 	TAGKEYS(          XKB_KEY_9, XKB_KEY_parenleft,                  8),
+
+	/* scroll workspaces: focus the Nth column (or workspace while tiling) */
+	FOCUSNUM(         XKB_KEY_1, 0),
+	FOCUSNUM(         XKB_KEY_2, 1),
+	FOCUSNUM(         XKB_KEY_3, 2),
+	FOCUSNUM(         XKB_KEY_4, 3),
+	FOCUSNUM(         XKB_KEY_5, 4),
+	FOCUSNUM(         XKB_KEY_6, 5),
+	FOCUSNUM(         XKB_KEY_7, 6),
+	FOCUSNUM(         XKB_KEY_8, 7),
+	FOCUSNUM(         XKB_KEY_9, 8),
 
 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_E,          quit,           {0} },
 

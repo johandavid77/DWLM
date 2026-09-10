@@ -17,6 +17,14 @@
  * mouse_scroll = 1            # wheel/touchpad pan the strip in scroll mode
  * pixels_per_notch = 80.0     # strip px scrolled per wheel notch
  * continuous_speed = 1.5      # sensitivity for touchpad/continuous deltas
+ * anim_ms      = 250          # viewport animation duration (0 = snap)
+ * anim_ease    = 1            # 0: linear, 1: cubic ease-in-out
+ *
+ * [rules.N]   (N = 1..24, applied after the compiled rules, so runtime wins)
+ * app_id      = "foot"        # substring match on window app id
+ * title       = "Calculator"  # substring match on window title (optional)
+ * isfloating  = true          # start this app floating
+ * tags        = 1             # optional tag mask (default: keep rules' tags)
  *
  * [colors]
  * root    = "#222222"
@@ -28,6 +36,43 @@
  */
 
 #include <ctype.h>
+
+/* Runtime window rules (Fase 5.2): applied in applyrules() AFTER the
+ * compiled rules, so their isfloating/tags win over the defaults. */
+#define RUNTIME_RULES_MAX 24
+typedef struct {
+	char app_id[128];
+	char title[128];
+	int isfloating;
+	int tags;
+} RuntimeRule;
+static RuntimeRule runtime_rules[RUNTIME_RULES_MAX];
+
+/* strip surrounding double quotes from a value (mutates the buffer) */
+static char *
+config_runtime_unquote(char *v)
+{
+	size_t n = strlen(v);
+	if (n >= 2 && v[0] == '"' && v[n - 1] == '"') {
+		v[n - 1] = '\0';
+		return v + 1;
+	}
+	return v;
+}
+
+static int
+config_runtime_parse_bool(const char *v, int *out)
+{
+	if (!strcmp(v, "1") || !strcmp(v, "true") || !strcmp(v, "yes")) {
+		*out = 1;
+		return 0;
+	}
+	if (!strcmp(v, "0") || !strcmp(v, "false") || !strcmp(v, "no")) {
+		*out = 0;
+		return 0;
+	}
+	return -1;
+}
 
 static char *
 config_runtime_trim(char *s)
@@ -173,6 +218,33 @@ config_runtime_apply_key(const char *section, const char *key, const char *value
 				&& !config_runtime_parse_double(value, &d)
 				&& d >= 0)
 			scroll_continuous_speed = d;
+		else if (!strcmp(key, "anim_ms")
+				&& !config_runtime_parse_int(value, &i) && i >= 0)
+			scroll_anim_ms = i;
+		else if (!strcmp(key, "anim_ease")
+				&& !config_runtime_parse_int(value, &i)
+				&& (i == 0 || i == 1))
+			scroll_anim_ease = i;
+	} else if (!strncmp(section, "rules.", 6)) {
+		/* [rules.N] runtime window rules (1-based, capped) */
+		RuntimeRule *r;
+		int b;
+		int idx = atoi(section + 6) - 1;
+		if (idx < 0 || idx >= RUNTIME_RULES_MAX)
+			return;
+		r = &runtime_rules[idx];
+		if (!strcmp(key, "app_id"))
+			snprintf(r->app_id, sizeof(r->app_id), "%s",
+					config_runtime_unquote((char *)value));
+		else if (!strcmp(key, "title"))
+			snprintf(r->title, sizeof(r->title), "%s",
+					config_runtime_unquote((char *)value));
+		else if (!strcmp(key, "isfloating")
+				&& !config_runtime_parse_bool(value, &b))
+			r->isfloating = b;
+		else if (!strcmp(key, "tags")
+				&& !config_runtime_parse_int(value, &i) && i >= 0)
+			r->tags = i;
 	} else if (!strcmp(section, "colors")) {
 		if (!strcmp(key, "root"))
 			config_runtime_parse_color(value, rootcolor);
@@ -241,6 +313,8 @@ config_runtime_reload(void)
 	if (!f)
 		return; /* no config file: keep compiled defaults */
 
+	memset(runtime_rules, 0, sizeof(runtime_rules));
+
 	while ((cfg = fgets(line, sizeof(line), f))) {
 		char *s = line;
 		char *eol = s + strlen(s);
@@ -291,12 +365,12 @@ config_runtime_reload(void)
 
 	wlr_log(WLR_INFO, "[config] reloaded: borderpx=%u radius=%d gap=%.1f "
 			"outer=%.1f min=%.2f max=%.2f presets=%zu "
-			"mouse=%d ppn=%.1f speed=%.2f "
+			"mouse=%d ppn=%.1f speed=%.2f anim=%dms ease=%d "
 			"root=%02X%02X%02X border=%02X%02X%02X focus=%02X%02X%02X",
 			borderpx, corner_radius, scroll_gap, scroll_outer_gap,
 			scroll_width_min, scroll_width_max, scroll_preset_count,
 			scroll_mouse_scroll, scroll_pixels_per_notch,
-			scroll_continuous_speed,
+			scroll_continuous_speed, scroll_anim_ms, scroll_anim_ease,
 			(unsigned)(rootcolor[0] * 255), (unsigned)(rootcolor[1] * 255),
 			(unsigned)(rootcolor[2] * 255),
 			(unsigned)(bordercolor[0] * 255), (unsigned)(bordercolor[1] * 255),

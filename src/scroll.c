@@ -15,6 +15,7 @@
  *     the focused column.
  */
 #include <stdlib.h>
+#include <time.h>
 
 #include "scroll.h"
 
@@ -106,43 +107,145 @@ scroll_viewport_bounds(Monitor *m, double *lo, double *hi)
 	*hi = s1 - a.width;       /* scroll forward to the last column */
 }
 
+/* Animation --------------------------------------------------------------- */
+
+static uint64_t
+scroll_now_ms(void)
+{
+	struct timespec ts;
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+	return (uint64_t)(ts.tv_sec) * 1000ULL + (uint64_t)(ts.tv_nsec) / 1000000UL;
+}
+
+/* 0..1 progress -> eased progress (scroll_anim_ease: 0 linear, 1 cubic io) */
+static double
+scroll_ease(double p)
+{
+	if (scroll_anim_ease != 1)
+		return p; /* linear */
+	if (p < 0.5)
+		return 4 * p * p * p;
+	return 1 - (-2 * p + 2) * (-2 * p + 2) * (-2 * p + 2) / 2;
+}
+
+/* Set the animation target. If a different target was already in flight,
+ * restart from the current (animated) position so the viewport chases it. */
+static void
+scroll_set_target(Monitor *m, double to)
+{
+	if (m->scroll.vp_animating && m->scroll.vp_to != to) {
+		m->scroll.vp_from = m->scroll.viewport_x;
+		m->scroll.vp_begin = scroll_now_ms();
+	}
+	m->scroll.vp_to = to;
+}
+
+static int scroll_anim_tick(void *data);
+
+/* Advance the running animation (called by arrange(); also from the timer
+ * pump). Snaps to the target when animations are disabled or finished. */
+static void
+scroll_vp_tick(Monitor *m)
+{
+	uint64_t now;
+	double p, e;
+
+	if (scroll_anim_ms <= 0) {
+		m->scroll.viewport_x = m->scroll.vp_to;
+		return;
+	}
+	if (!m->scroll.vp_animating) {
+		if (m->scroll.viewport_x == m->scroll.vp_to)
+			return;
+		m->scroll.vp_animating = 1;
+		m->scroll.vp_from = m->scroll.viewport_x;
+		m->scroll.vp_begin = scroll_now_ms();
+	}
+	m->scroll.vp_end = m->scroll.vp_begin + (uint64_t)scroll_anim_ms;
+
+	now = scroll_now_ms();
+	if (now >= m->scroll.vp_end) {
+		m->scroll.viewport_x = m->scroll.vp_to;
+		m->scroll.vp_animating = 0;
+		if (m->scroll.anim_timer) {
+			wl_event_source_remove(m->scroll.anim_timer);
+			m->scroll.anim_timer = NULL;
+		}
+		return;
+	}
+	p = (double)(now - m->scroll.vp_begin)
+		/ (double)(m->scroll.vp_end - m->scroll.vp_begin);
+	if (p < 0)
+		p = 0;
+	e = scroll_ease(p);
+	m->scroll.viewport_x = m->scroll.vp_from + (m->scroll.vp_to - m->scroll.vp_from) * e;
+
+	/* keep pumping frames while the animation runs */
+	if (!m->scroll.anim_timer && event_loop) {
+		m->scroll.anim_timer = wl_event_loop_add_timer(event_loop,
+				scroll_anim_tick, m);
+		if (m->scroll.anim_timer)
+			wl_event_source_timer_update(m->scroll.anim_timer, 16);
+	}
+}
+
+static int
+scroll_anim_tick(void *data)
+{
+	Monitor *m = data;
+	arrange(m); /* advances the animation via scroll_vp_tick() */
+	if (!m->scroll.vp_animating) {
+		if (m->scroll.anim_timer) {
+			wl_event_source_remove(m->scroll.anim_timer);
+			m->scroll.anim_timer = NULL;
+		}
+		return 0;
+	}
+	if (m->scroll.anim_timer)
+		wl_event_source_timer_update(m->scroll.anim_timer, 16);
+	return 1;
+}
+
 /* Scroll the viewport so `active` is visible, or clamp if keep_viewport */
 static void
 scroll_ensure_viewport(Monitor *m, ScrollCol *active)
 {
 	struct wlr_box a;
-	double lo, hi, vp;
+	double lo, hi, ref, to;
 
 	scroll_area(m, &a);
 	scroll_viewport_bounds(m, &lo, &hi);
 	if (m->scroll.keep_viewport) {
-		m->scroll.keep_viewport = 0;
-		if (m->scroll.viewport_x < lo)
-			m->scroll.viewport_x = lo;
-		else if (m->scroll.viewport_x > hi)
-			m->scroll.viewport_x = hi;
+		/* user-pinned (wheel pan / center / resize): keep current target.
+		 * Released by the keyboard navigation functions. */
+		scroll_set_target(m, m->scroll.vp_to);
 		return;
 	}
 	if (!active) {
-		if (m->scroll.viewport_x < lo)
-			m->scroll.viewport_x = lo;
-		else if (m->scroll.viewport_x > hi)
-			m->scroll.viewport_x = hi;
+		ref = m->scroll.vp_to;
+		scroll_set_target(m, ref < lo ? lo : (ref > hi ? hi : ref));
 		return;
 	}
 
-	vp = m->scroll.viewport_x;
-	if (scroll_col_x(m, active) - vp < a.x + scroll_gap)
-		vp = scroll_col_x(m, active) - (a.x + scroll_gap);
-	if (scroll_col_x(m, active) + scroll_col_width(m, active) - vp
-			> a.x + a.width - scroll_gap)
-		vp = scroll_col_x(m, active) + scroll_col_width(m, active)
-			- (a.x + a.width - scroll_gap);
-	if (vp < lo)
-		vp = lo;
-	else if (vp > hi)
-		vp = hi;
-	m->scroll.viewport_x = vp;
+	/* Geometric target: bring the focused column fully into view, starting
+	 * from the current target so in-flight animations don't fight. */
+	{
+		double pad = scroll_gap;
+		double L = scroll_col_x(m, active);
+		double W = scroll_col_width(m, active);
+		double tlo = L + W - (a.x + a.width - pad);
+		double thi = L - (a.x + pad);
+		to = ref = m->scroll.vp_to;
+		if (to < tlo)
+			to = tlo;
+		else if (to > thi)
+			to = thi;
+		if (to < lo)
+			to = lo;
+		else if (to > hi)
+			to = hi;
+		scroll_set_target(m, to);
+	}
 }
 
 /* Focus the top client of a column */
@@ -207,6 +310,7 @@ scroll(Monitor *m)
 	{
 		Client *sel = focustop(m);
 		scroll_ensure_viewport(m, sel ? sel->scol_col : NULL);
+		scroll_vp_tick(m);
 	}
 
 	/* 4. Lay out clients, stacked vertically inside their columns */
@@ -239,6 +343,11 @@ void
 scroll_release(Monitor *m)
 {
 	ScrollCol *col, *tmp;
+
+	if (m->scroll.anim_timer) {
+		wl_event_source_remove(m->scroll.anim_timer);
+		m->scroll.anim_timer = NULL;
+	}
 
 	wl_list_for_each_safe(col, tmp, &m->scroll.cols, link) {
 		Client *c, *ctmp;
@@ -319,6 +428,7 @@ scroll_focus(const Arg *arg)
 		focusstack(arg);
 		return;
 	}
+	selmon->scroll.keep_viewport = 0;
 sel = focustop(selmon);
 	if (!sel || !(col = sel->scol_col))
 		return;
@@ -344,6 +454,7 @@ scroll_movecol(const Arg *arg)
 		zoom(arg);
 		return;
 	}
+	selmon->scroll.keep_viewport = 0;
 	sel = focustop(selmon);
 	if (!sel || !(col = sel->scol_col))
 		return;
@@ -363,6 +474,7 @@ scroll_first(const Arg *arg)
 
 	if (!selmon || selmon->lt[selmon->sellt]->arrange != scroll)
 		return;
+	selmon->scroll.keep_viewport = 0;
 	if (wl_list_empty(&selmon->scroll.cols))
 		return;
 	col = wl_container_of(selmon->scroll.cols.next, col, link);
@@ -378,6 +490,7 @@ scroll_last(const Arg *arg)
 
 	if (!selmon || selmon->lt[selmon->sellt]->arrange != scroll)
 		return;
+	selmon->scroll.keep_viewport = 0;
 	if (wl_list_empty(&selmon->scroll.cols))
 		return;
 	col = wl_container_of(selmon->scroll.cols.prev, col, link);
@@ -394,6 +507,7 @@ scroll_movecol_first(const Arg *arg)
 
 	if (!selmon || selmon->lt[selmon->sellt]->arrange != scroll)
 		return;
+	selmon->scroll.keep_viewport = 0;
 	sel = focustop(selmon);
 	if (!sel || !(col = sel->scol_col) || col->link.prev == &selmon->scroll.cols)
 		return;
@@ -411,6 +525,7 @@ scroll_movecol_last(const Arg *arg)
 
 	if (!selmon || selmon->lt[selmon->sellt]->arrange != scroll)
 		return;
+	selmon->scroll.keep_viewport = 0;
 	sel = focustop(selmon);
 	if (!sel || !(col = sel->scol_col) || col->link.next == &selmon->scroll.cols)
 		return;
@@ -429,6 +544,7 @@ scroll_focus_up_down(const Arg *arg)
 
 	if (!selmon || selmon->lt[selmon->sellt]->arrange != scroll)
 		return;
+	selmon->scroll.keep_viewport = 0;
 	sel = focustop(selmon);
 	if (!sel || !(col = sel->scol_col))
 		return;
@@ -452,6 +568,7 @@ scroll_cycle_width(const Arg *arg)
 
 	if (!selmon || selmon->lt[selmon->sellt]->arrange != scroll)
 		return;
+	selmon->scroll.keep_viewport = 0;
 	sel = focustop(selmon);
 	if (!sel || !(col = sel->scol_col))
 		return;
@@ -479,6 +596,7 @@ scroll_width(const Arg *arg)
 		setmfact(arg);
 		return;
 	}
+	selmon->scroll.keep_viewport = 0;
 	sel = focustop(selmon);
 	if (!sel || !(col = sel->scol_col))
 		return;
@@ -508,7 +626,7 @@ scroll_center(const Arg *arg)
 	vp = scroll_col_x(selmon, col) + scroll_col_width(selmon, col) / 2
 		- (selmon->w.x + selmon->w.width / 2);
 	scroll_viewport_bounds(selmon, &lo, &hi);
-	selmon->scroll.viewport_x = vp < lo ? lo : (vp > hi ? hi : vp);
+	selmon->scroll.vp_to = vp < lo ? lo : (vp > hi ? hi : vp);
 	selmon->scroll.keep_viewport = 1;
 	arrange(selmon);
 	printstatus();
@@ -530,16 +648,17 @@ scroll_can_pan(Monitor *m)
 void
 scroll_pan(Monitor *m, double delta)
 {
-	double lo, hi;
+	double lo, hi, to;
 
 	if (!m || !m->wlr_output->enabled)
 		return;
 	scroll_viewport_bounds(m, &lo, &hi);
-	m->scroll.viewport_x += delta;
-	if (m->scroll.viewport_x < lo)
-		m->scroll.viewport_x = lo;
-	else if (m->scroll.viewport_x > hi)
-		m->scroll.viewport_x = hi;
+	to = m->scroll.vp_to + delta;
+	if (to < lo)
+		to = lo;
+	else if (to > hi)
+		to = hi;
+	m->scroll.vp_to = to;
 	m->scroll.keep_viewport = 1;
 	arrange(m);
 }
@@ -555,6 +674,7 @@ scroll_consume(const Arg *arg)
 
 	if (!selmon || selmon->lt[selmon->sellt]->arrange != scroll)
 		return;
+	selmon->scroll.keep_viewport = 0;
 	sel = focustop(selmon);
 	if (!sel || !(col = sel->scol_col))
 		return;
@@ -584,6 +704,7 @@ scroll_expel(const Arg *arg)
 
 	if (!selmon || selmon->lt[selmon->sellt]->arrange != scroll)
 		return;
+	selmon->scroll.keep_viewport = 0;
 	sel = focustop(selmon);
 	if (!sel || !(col = sel->scol_col))
 		return;
@@ -600,4 +721,66 @@ scroll_expel(const Arg *arg)
 	sel->scol_col = newcol;
 	arrange(selmon);
 	printstatus();
+}
+
+void
+scroll_focus_number(const Arg *arg)
+{
+	ScrollCol *col;
+	int i = 0;
+
+	if (!selmon)
+		return;
+	if (selmon->lt[selmon->sellt]->arrange != scroll) {
+		/* workspace switch while tiling: same key, other meaning */
+		view(arg);
+		return;
+	}
+	selmon->scroll.keep_viewport = 0;
+	if (wl_list_empty(&selmon->scroll.cols))
+		return;
+	wl_list_for_each(col, &selmon->scroll.cols, link) {
+		if (i++ == arg->i) {
+			scroll_focus_col(selmon, col);
+			arrange(selmon);
+			printstatus();
+			return;
+		}
+	}
+	/* index out of range: focus the last column */
+	col = wl_container_of(selmon->scroll.cols.prev, col, link);
+	scroll_focus_col(selmon, col);
+	arrange(selmon);
+	printstatus();
+}
+
+void
+scroll_place_float(Client *c)
+{
+	Monitor *m = c->mon;
+	struct wlr_box a;
+	int w, h, x, y;
+
+	if (!m || !m->wlr_output->enabled || m->lt[m->sellt]->arrange != scroll)
+		return;
+	scroll_area(m, &a);
+	w = c->geom.width;
+	h = c->geom.height;
+	if (w < 1)
+		w = 1;
+	if (h < 1)
+		h = 1;
+	x = (int)m->scroll.vp_to + (a.width - w) / 2;
+	y = a.y + (a.height - h) / 2;
+	if (x < a.x)
+		x = a.x;
+	if (y < a.y)
+		y = a.y;
+	if (x + w > a.x + a.width)
+		x = a.x + a.width - w;
+	if (y + h > a.y + a.height)
+		y = a.y + a.height - h;
+	c->geom.x = x;
+	c->geom.y = y;
+	resize(c, (struct wlr_box){.x = x, .y = y, .width = w, .height = h}, 0);
 }

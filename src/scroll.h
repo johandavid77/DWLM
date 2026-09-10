@@ -11,6 +11,7 @@
 #ifndef DWLM_SCROLL_H
 #define DWLM_SCROLL_H
 
+#include <stdint.h>
 #include <wayland-server-core.h>
 
 typedef struct Monitor Monitor;
@@ -29,6 +30,12 @@ struct ScrollCol {
 typedef struct ScrollState ScrollState;
 struct ScrollState {
 	double viewport_x;  /* strip-coordinate of the viewport's left edge */
+	double vp_from;     /* viewport_x when the current animation started */
+	double vp_to;       /* animation target */
+	uint64_t vp_begin;  /* animation start time (ms, CLOCK_MONOTONIC) */
+	uint64_t vp_end;    /* animation end time (ms) */
+	int vp_animating;   /* an animation is currently running */
+	struct wl_event_source *anim_timer; /* NULL when idle */
 	struct wl_list cols; /* ordered list of ScrollCol */
 	int width_idx;      /* index of the active width preset */
 	int keep_viewport;  /* arrange() must not auto-scroll to the focus */
@@ -88,6 +95,15 @@ void scroll_expel(const Arg *arg);
 
 /* Focus the window above/below within the focused column. arg->i: -1/+1. */
 void scroll_focus_up_down(const Arg *arg);
+
+/* Focus the column at index arg->i (0-based); clamps to the last column.
+ * In non-scroll layouts falls back to view() (workspace switch), so the
+ * same keys behave as "go to workspace N" while tiling. */
+void scroll_focus_number(const Arg *arg);
+
+/* Center a just-mapped floating window over the visible viewport area
+ * (scroll mode only; a no-op otherwise). */
+void scroll_place_float(Client *c);
 
 /* Niri-style interactive resize: in scroll mode the pointer moves the right
  * edge of the focused column; on floating windows it resizes in place. */

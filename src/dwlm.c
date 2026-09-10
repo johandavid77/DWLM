@@ -494,6 +494,18 @@ applyrules(Client *c)
 			}
 		}
 	}
+	/* runtime TOML rules (_config_runtime.c) override the compiled ones */
+	for (i = 0; i < RUNTIME_RULES_MAX; i++) {
+		const RuntimeRule *rr = &runtime_rules[i];
+		if (!rr->app_id[0] && !rr->title[0])
+			continue;
+		if ((!rr->title[0] || strstr(title, rr->title))
+				&& (!rr->app_id[0] || strstr(appid, rr->app_id))) {
+			c->isfloating = rr->isfloating;
+			if (rr->tags)
+				newtags |= rr->tags;
+		}
+	}
 	setmon(c, mon, newtags);
 }
 
@@ -1821,6 +1833,8 @@ mapnotify(struct wl_listener *listener, void *data)
 	} else {
 		applyrules(c);
 	}
+	if (c->isfloating)
+		scroll_place_float(c);
 	printstatus();
 
 unset_fullscreen:
