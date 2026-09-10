@@ -1601,8 +1601,11 @@ keypress(struct wl_listener *listener, void *data)
 	/* On _press_ if there is no active screen locker,
 	 * attempt to process a compositor keybinding. */
 	if (!locked && event->state == WL_KEYBOARD_KEY_STATE_PRESSED) {
-		for (i = 0; i < nsyms; i++)
+		for (i = 0; i < nsyms; i++) {
+			fprintf(stderr, "DBGKEY keycode=%u sym=%s(0x%x) mods=0x%x\n",
+					event->keycode, xkb_keysym_get_name(syms[i]), syms[i], mods);
 			handled = keybinding(mods, syms[i]) || handled;
+		}
 	}
 
 	if (handled && group->wlr_group->keyboard.repeat_info.delay > 0) {
