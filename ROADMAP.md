@@ -79,10 +79,19 @@
           wlroots-0.18 (ext-optimized-sync) y para un futuro bar shell
           (ext list) — la FTM clásica cubre ya la integración del bar
 - [ ] **Fase 8 — Packaging**
-  - [ ] 8.1 Debian Trixie: packaging/debian/ (libwlroots-0.18-dev)
-  - [ ] 8.2 Arch: packaging/arch/PKGBUILD (wlroots0.20)
-  - [ ] 8.3 Void: packaging/void/template (wlroots0.20-devel)
-  - [ ] 8.4 CI fixture
+  - [x] 8.1 Debian Trixie: debian/ en la raíz del repo
+    - dwlm (control/rules/changelog/copyright, native 3.0). Build-Depends en
+      libscenefx-0.2-dev (scenefx no tiene paquete oficial) y
+      libwlroots-0.18-dev; Depends en libscenefx-0.2 + xwayland.
+    - `packaging/scenefx/debian`: paquete libscenefx-0.2 / -dev (meson).
+    - `packaging/build-scenefx.sh`: construir+instalar scenefx como .deb.
+    - Probado en VM end-to-end: `dpkg-buildpackage -us -uc -b` genera
+      dwlm_0.1.0-1_amd64.deb (Depends correctos), tras scenefx vía apt.
+  - [ ] 8.2 Arch: packaging/arch/PKGBUILD (wlroots 0.20 + scenefx AUR) — sin probar
+  - [ ] 8.3 Void: packaging/void/template (wlroots-0.20 free) — sin probar
+  - [ ] 8.4 CI fixture: .github/workflows/build.yml (Debian Trixie:
+      scenefx deb + make zero-warnings + dpkg-buildpackage)
+    - Pendiente de publicar: requiere scope `workflow` en el token de GitHub
 - [ ] **Fase 9 — Integración Noctalia + pulido**
   - [ ] 9.1 Probar con Noctalia5
   - [ ] 9.2 Estado del sistema (status bar, indicators, screen recording)

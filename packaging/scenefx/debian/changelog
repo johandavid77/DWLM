@@ -1,0 +1,5 @@
+scenefx (0.2-1) unstable; urgency=medium
+
+  * Bootstrap build of SceneFX 0.2 (fx renderer) for dwlm.
+
+ -- DreamerLab <dreamerlabs@protonmail.com>  Wed, 02 Sep 2026 12:00:00 -0300
