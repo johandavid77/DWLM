@@ -2234,8 +2234,7 @@ resize(Client *c, struct wlr_box geo, int interact)
 {
 	struct wlr_box *bbox;
 	struct wlr_box clip;
-	struct wlr_scene_node *surface_node;
-	struct wlr_scene_buffer *surface_buffer;
+	struct wlr_scene_node *it, *tmp;
 
 	if (!c->mon || !client_surface(c)->mapped)
 		return;
@@ -2253,12 +2252,13 @@ resize(Client *c, struct wlr_box geo, int interact)
 	wlr_scene_rect_set_corner_radius(c->border[0], corner_radius,
 			CORNER_LOCATION_ALL);
 
-	/* Round the actual surface buffer node (first child of the scene tree) */
-	surface_node = wl_container_of(c->scene_surface->children.next,
-			surface_node, link);
-	surface_buffer = wlr_scene_buffer_from_node(surface_node);
-	wlr_scene_buffer_set_corner_radius(surface_buffer,
-			c->isfullscreen ? 0 : corner_radius, CORNER_LOCATION_ALL);
+	/* Round the actual surface buffer node(s) of this client's scene tree */
+	wl_list_for_each_safe(it, tmp, &c->scene_surface->children, link) {
+		if (it->type == WLR_SCENE_NODE_BUFFER)
+			wlr_scene_buffer_set_corner_radius(wlr_scene_buffer_from_node(it),
+					c->isfullscreen ? 0 : corner_radius,
+					CORNER_LOCATION_ALL);
+	}
 
 	/* this is a no-op if size hasn't changed */
 	c->resize = client_set_size(c, c->geom.width - 2 * c->bw,
