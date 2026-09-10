@@ -2,9 +2,11 @@
  * See LICENSE file for copyright and license details.
  */
 #include <getopt.h>
+#include <errno.h>
 #include <libinput.h>
 #include <linux/input-event-codes.h>
 #include <math.h>
+#include <poll.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -2331,8 +2333,22 @@ run(char *startup_cmd)
 	/* Run the Wayland event loop. This does not return until you exit the
 	 * compositor. Starting the backend rigged up all of the necessary event
 	 * loop configuration to listen to libinput events, DRM events, generate
-	 * frame events at the refresh rate, and so on. */
-	wl_display_run(dpy);
+	 * frame events at the refresh rate, and so on.
+	 * We poll with a small timeout so SIGHUP-driven runtime config reloads
+	 * are drained promptly without interrupting a signal handler with
+	 * non-async-signal-safe work. */
+	for (;;) {
+		struct pollfd pfd = { .fd = wl_display_get_fd(dpy), .events = POLLIN };
+		config_runtime_drain();
+		if (wl_display_dispatch_pending(dpy) < 0)
+			break;
+		if (wl_display_flush_clients(dpy) < 0)
+			break;
+		while (poll(&pfd, 1, 200) < 0 && errno == EINTR)
+			;
+		if (wl_display_read_events(dpy) < 0)
+			break;
+	}
 }
 
 void
@@ -2508,9 +2524,6 @@ setup(void)
 	 * clients from the Unix socket, manging Wayland globals, and so on. */
 	dpy = wl_display_create();
 	event_loop = wl_display_get_event_loop(dpy);
-
-	/* runtime config hot-reload timer */
-	config_runtime_init();
 
 	/* The backend is a wlroots feature which abstracts the underlying input and
 	 * output hardware. The autocreate option will choose the most suitable

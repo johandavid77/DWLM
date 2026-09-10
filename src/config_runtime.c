@@ -290,27 +290,13 @@ config_runtime_reload(void)
 			(unsigned)(focuscolor[2] * 255));
 }
 
-/* Main-loop timer callback: performs the reload drained from the signal
- * handler (SIGHUP only flags; the actual work happens here, in the main
- * thread, so it is async-signal-safe). */
-static int
-config_runtime_timer(void *data)
+/* Drained by the main-loop poll in run() (see dwlm.c). SIGHUP only flags;
+ * the work happens here in the main thread (async-signal-safe). */
+static void
+config_runtime_drain(void)
 {
-	(void)data;
 	if (config_reload_pending) {
 		config_reload_pending = 0;
-		wlr_log(WLR_INFO, "[config] reload requested, path=%s",
-				getenv("XDG_CONFIG_HOME") ? "env" : "default");
 		config_runtime_reload();
 	}
-	return 1; /* keep the timer armed */
-}
-
-static void
-config_runtime_init(void)
-{
-	struct wl_event_source *src = wl_event_loop_add_timer(
-			wl_display_get_event_loop(dpy), config_runtime_timer, NULL);
-	if (src)
-		wl_event_source_timer_update(src, 250);
 }
