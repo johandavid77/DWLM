@@ -542,10 +542,6 @@ scroll_pan(Monitor *m, double delta)
 		m->scroll.viewport_x = hi;
 	m->scroll.keep_viewport = 1;
 	arrange(m);
-	{ /* TEMP VERIFY */ char b[96];
-		int n = snprintf(b, sizeof(b), "[pan] d=%g vp=%g\n", delta,
-				m->scroll.viewport_x);
-		write(2, b, n); }
 }
 
 /* Window management ------------------------------------------------------ */
