@@ -2345,8 +2345,7 @@ run(char *startup_cmd)
 		 * fd sources AND timers), then push pending changes to clients. */
 		if (wl_event_loop_dispatch(event_loop, 200) < 0)
 			break;
-		if (wl_display_flush_clients(dpy) < 0)
-			break;
+		wl_display_flush_clients(dpy);
 	}
 }
 
