@@ -2340,6 +2340,9 @@ run(char *startup_cmd)
 	 * are drained promptly without interrupting a signal handler with
 	 * non-async-signal-safe work. */
 	for (;;) {
+		static int entry;
+		if (entry++ < 3)
+			wlr_log(WLR_INFO, "[run] loop entry %d", entry);
 		config_runtime_drain();
 		/* Wait up to 200ms on the compositor's own event loop (services
 		 * fd sources AND timers), then push pending changes to clients. */
