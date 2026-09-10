@@ -299,6 +299,8 @@ config_runtime_timer(void *data)
 	(void)data;
 	if (config_reload_pending) {
 		config_reload_pending = 0;
+		wlr_log(WLR_INFO, "[config] reload requested, path=%s",
+				getenv("XDG_CONFIG_HOME") ? "env" : "default");
 		config_runtime_reload();
 	}
 	return 1; /* keep the timer armed */
