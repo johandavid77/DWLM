@@ -276,6 +276,18 @@ config_runtime_reload(void)
 	fclose(f);
 
 	config_runtime_apply();
+
+	wlr_log(WLR_INFO, "[config] reloaded: borderpx=%u radius=%d gap=%.1f "
+			"outer=%.1f min=%.2f max=%.2f presets=%zu "
+			"root=%02X%02X%02X border=%02X%02X%02X focus=%02X%02X%02X",
+			borderpx, corner_radius, scroll_gap, scroll_outer_gap,
+			scroll_width_min, scroll_width_max, scroll_preset_count,
+			(unsigned)(rootcolor[0] * 255), (unsigned)(rootcolor[1] * 255),
+			(unsigned)(rootcolor[2] * 255),
+			(unsigned)(bordercolor[0] * 255), (unsigned)(bordercolor[1] * 255),
+			(unsigned)(bordercolor[2] * 255),
+			(unsigned)(focuscolor[0] * 255), (unsigned)(focuscolor[1] * 255),
+			(unsigned)(focuscolor[2] * 255));
 }
 
 /* Main-loop timer callback: performs the reload drained from the signal
