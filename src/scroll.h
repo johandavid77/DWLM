@@ -80,4 +80,8 @@ void scroll_expel(const Arg *arg);
 /* Focus the window above/below within the focused column. arg->i: -1/+1. */
 void scroll_focus_up_down(const Arg *arg);
 
+/* Niri-style interactive resize: in scroll mode the pointer moves the right
+ * edge of the focused column; on floating windows it resizes in place. */
+void scroll_resize_drag(Monitor *m, double cx, double cy);
+
 #endif

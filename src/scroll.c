@@ -230,6 +230,39 @@ scroll_detach(Client *c)
 /* Navigation ------------------------------------------------------------- */
 
 void
+scroll_resize_drag(Monitor *m, double cx, double cy)
+{
+	Client *sel;
+	ScrollCol *col;
+	double left, wf;
+
+	if (!m)
+		return;
+	sel = focustop(m);
+	if (!sel)
+		return;
+
+	if (sel->isfloating && !sel->isfullscreen) {
+		/* Floating windows: drag the bottom-right corner in place */
+		resize(sel, (struct wlr_box){.x = sel->geom.x, .y = sel->geom.y,
+			.width = (int)round(cx - sel->geom.x),
+			.height = (int)round(cy - sel->geom.y)}, 1);
+		return;
+	}
+
+	col = sel->scol_col;
+	if (!col)
+		return;
+
+	/* Tiled: follow the pointer as the column's right edge */
+	left = scroll_col_x(m, col) - m->scroll.viewport_x;
+	wf = (cx - left) / (double)m->w.width;
+	wf = MAX(scroll_width_min, MIN(scroll_width_max, wf));
+	col->width = wf;
+	arrange(m);
+}
+
+void
 scroll_focus(const Arg *arg)
 {
 	Client *sel;
@@ -242,21 +275,13 @@ scroll_focus(const Arg *arg)
 		focusstack(arg);
 		return;
 	}
-	sel = focustop(selmon);
-	if (!sel || !(col = sel->scol_col)) {
-		fprintf(stderr, "DBGSCROLL focus: early (sel=%p col=%p)\n", (void *)sel,
-				(void *)(sel ? sel->scol_col : NULL));
+sel = focustop(selmon);
+	if (!sel || !(col = sel->scol_col))
 		return;
-	}
 	next = (arg->i > 0) ? col->link.next : col->link.prev;
-	if (next == &selmon->scroll.cols) {
-		fprintf(stderr, "DBGSCROLL focus: edge, ncols=%d\n",
-				wl_list_length(&selmon->scroll.cols));
+	if (next == &selmon->scroll.cols)
 		return; /* at the edge; no wrap */
-	}
 	target = wl_container_of(next, target, link);
-fprintf(stderr, "DBGSCROLL focus: col=%p -> %p\n", (void *)col,
-			(void *)target);
 	scroll_focus_col(selmon, target);
 	arrange(selmon);
 	printstatus();

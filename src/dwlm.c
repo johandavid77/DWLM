@@ -144,6 +144,7 @@ typedef struct Client {
 	unsigned int bw;
 	uint32_t tags;
 	int isfloating, isurgent, isfullscreen;
+	int ismax, prevfloating; /* maximize toggle state */
 	uint32_t resize; /* configure serial of a pending resize */
 } Client;
 
@@ -344,6 +345,8 @@ static void tagmon(const Arg *arg);
 static void tile(Monitor *m);
 static void togglefloating(const Arg *arg);
 static void togglefullscreen(const Arg *arg);
+static void togglemax(const Arg *arg);
+static void toggleresize(const Arg *arg);
 static void toggletag(const Arg *arg);
 static void toggleview(const Arg *arg);
 static void unlocksession(struct wl_listener *listener, void *data);
@@ -409,6 +412,7 @@ static struct wl_listener lock_listener = {.notify = locksession};
 static struct wlr_seat *seat;
 static KeyboardGroup *kb_group;
 static unsigned int cursor_mode;
+static int resize_mode; /* Niri-style interactive resize overlay */
 static Client *grabc;
 static int grabcx, grabcy; /* client-relative */
 
@@ -1604,15 +1608,6 @@ keypress(struct wl_listener *listener, void *data)
 		for (i = 0; i < nsyms; i++)
 			handled = keybinding(mods, syms[i]) || handled;
 	}
-	{
-		int i2;
-		for (i2 = 0; i2 < nsyms; i2++) {
-			char _n[64];
-			xkb_keysym_get_name(syms[i2], _n, sizeof(_n));
-			fprintf(stderr, "DBGKEY code=%u state=%d sym=%s mods=0x%x handled=%d\n",
-					event->keycode, event->state, _n, mods, handled);
-		}
-	}
 
 	if (handled && group->wlr_group->keyboard.repeat_info.delay > 0) {
 		group->mods = mods;
@@ -1877,6 +1872,12 @@ motionnotify(uint32_t time, struct wlr_input_device *device, double dx, double d
 	/* Update drag icon's position */
 	wlr_scene_node_set_position(&drag_icon->node, (int)round(cursor->x), (int)round(cursor->y));
 
+	/* Niri-style interactive resize: follow the pointer to resize */
+	if (resize_mode) {
+		scroll_resize_drag(selmon, cursor->x, cursor->y);
+		return;
+	}
+
 	/* If we are currently grabbing the mouse, handle and return */
 	if (cursor_mode == CurMove) {
 		/* Move the grabbed client to the new position. */
@@ -1939,6 +1940,43 @@ moveresize(const Arg *arg)
 		wlr_cursor_set_xcursor(cursor, cursor_mgr, "se-resize");
 		break;
 	}
+}
+
+void
+togglemax(const Arg *arg)
+{
+	Client *c = focustop(selmon);
+	if (!c || client_is_unmanaged(c) || c->isfullscreen)
+		return;
+
+	if (c->ismax) {
+		c->ismax = 0;
+		if (c->prevfloating) {
+			c->geom = c->prev;
+			resize(c, c->prev, 1);
+		}
+		setfloating(c, c->prevfloating);
+	} else {
+		c->prev = c->geom;
+		c->prevfloating = c->isfloating;
+		c->ismax = 1;
+		setfloating(c, 1);
+		resize(c, c->mon->w, 0);
+	}
+	arrange(c->mon);
+	printstatus();
+}
+
+void
+toggleresize(const Arg *arg)
+{
+	resize_mode = !resize_mode;
+	if (resize_mode && selmon)
+		selmon->scroll.keep_viewport = 1;
+	else if (selmon)
+		selmon->scroll.keep_viewport = 0;
+	wlr_cursor_set_xcursor(cursor, cursor_mgr,
+			resize_mode ? "se-resize" : "default");
 }
 
 void

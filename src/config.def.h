@@ -157,10 +157,12 @@ static const Key keys[] = {
 	{ MODKEY,                    XKB_KEY_Right,      scroll_focus,   {.i = +1} },
 
 	/* column widths */
-	{ MODKEY,                    XKB_KEY_r,          scroll_cycle_width, {0} },
+	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_v,          scroll_cycle_width, {0} },
 	{ MODKEY,                    XKB_KEY_minus,      scroll_width,   {.f = -0.05f} },
 	{ MODKEY,                    XKB_KEY_equal,      scroll_width,   {.f = +0.05f} },
 	{ MODKEY,                    XKB_KEY_c,          scroll_center,  {0} },
+	{ MODKEY,                    XKB_KEY_r,          toggleresize,   {0} },
+	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_r,          toggleresize,   {0} },
 
 	/* window management */
 	{ MODKEY,                    XKB_KEY_bracketleft,  scroll_consume, {0} },
@@ -172,9 +174,10 @@ static const Key keys[] = {
 	/* layouts */
 	{ MODKEY,                    XKB_KEY_t,          setlayout,      {.v = &layouts[0]} },
 	{ MODKEY,                    XKB_KEY_f,          setlayout,      {.v = &layouts[1]} },
-	{ MODKEY,                    XKB_KEY_m,          setlayout,      {.v = &layouts[2]} },
+	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_m,          setlayout,      {.v = &layouts[2]} },
 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_s,          setlayout,      {.v = &layouts[3]} },
 	{ MODKEY,                    XKB_KEY_space,      setlayout,      {0} },
+	{ MODKEY,                    XKB_KEY_m,          togglemax,      {0} },
 
 	/* workspace/tag madness */
 	{ MODKEY,                    XKB_KEY_0,          view,           {.ui = ~0} },
