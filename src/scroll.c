@@ -783,4 +783,9 @@ scroll_place_float(Client *c)
 	c->geom.x = x;
 	c->geom.y = y;
 	resize(c, (struct wlr_box){.x = x, .y = y, .width = w, .height = h}, 0);
+	{ /* TEMP VERIFY */ char b[128];
+		const char *t = client_get_title(c);
+		int n = snprintf(b, sizeof(b), "[float] %s %dx%d+%d+%d vpt=%g\n",
+				t ? t : "?", w, h, x, y, m->scroll.vp_to);
+		write(2, b, n); }
 }
