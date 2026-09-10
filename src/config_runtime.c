@@ -276,6 +276,7 @@ config_runtime_reload(void)
 	fclose(f);
 
 	config_runtime_apply();
+	write(2, "applydone\n", 10);
 
 	wlr_log(WLR_INFO, "[config] reloaded: borderpx=%u radius=%d gap=%.1f "
 			"outer=%.1f min=%.2f max=%.2f presets=%zu "
