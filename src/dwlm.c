@@ -1605,10 +1605,10 @@ keypress(struct wl_listener *listener, void *data)
 			handled = keybinding(mods, syms[i]) || handled;
 	}
 	{
-		int i;
-		for (i = 0; i < nsyms; i++) {
+		int i2;
+		for (i2 = 0; i2 < nsyms; i2++) {
 			char _n[64];
-			xkb_keysym_get_name(syms[i], _n, sizeof(_n));
+			xkb_keysym_get_name(syms[i2], _n, sizeof(_n));
 			fprintf(stderr, "DBGKEY code=%u state=%d sym=%s mods=0x%x handled=%d\n",
 					event->keycode, event->state, _n, mods, handled);
 		}
