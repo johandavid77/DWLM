@@ -1541,7 +1541,8 @@ handlesig(int signo)
 	} else if (signo == SIGINT || signo == SIGTERM) {
 		quit(NULL);
 	} else if (signo == SIGHUP) {
-		/* just flag it; the main-loop timer in config_runtime.c drains it */
+		/* just flag it; drained by the run() loop */
+		write(2, "[sighup]\n", 9);  /* TEMP: verify SIGHUP reaches handler */
 		config_reload_pending = 1;
 	}
 }
@@ -2339,15 +2340,12 @@ run(char *startup_cmd)
 	 * are drained promptly without interrupting a signal handler with
 	 * non-async-signal-safe work. */
 	for (;;) {
-		struct pollfd pfd = { .fd = wl_display_get_fd(dpy), .events = POLLIN };
 		config_runtime_drain();
-		if (wl_display_dispatch_pending(dpy) < 0)
+		/* Wait up to 200ms on the compositor's own event loop (services
+		 * fd sources AND timers), then push pending changes to clients. */
+		if (wl_event_loop_dispatch(event_loop, 200) < 0)
 			break;
 		if (wl_display_flush_clients(dpy) < 0)
-			break;
-		while (poll(&pfd, 1, 200) < 0 && errno == EINTR)
-			;
-		if (wl_display_read_events(dpy) < 0)
 			break;
 	}
 }
