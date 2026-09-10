@@ -226,8 +226,11 @@ config_runtime_reload(void)
 		return;
 
 	f = fopen(path, "r");
-	if (!f)
+	if (!f) {
+		write(2, "[cfg:nofile]\n", 13);
 		return; /* no config file: keep compiled defaults */
+	}
+	write(2, "[cfg:opened]\n", 14);
 
 	while ((cfg = fgets(line, sizeof(line), f))) {
 		char *s = line;
@@ -276,6 +279,7 @@ config_runtime_reload(void)
 	fclose(f);
 
 	config_runtime_apply();
+	write(2, "[cfg:applied]\n", 15);
 
 	wlr_log(WLR_INFO, "[config] reloaded: borderpx=%u radius=%d gap=%.1f "
 			"outer=%.1f min=%.2f max=%.2f presets=%zu "
