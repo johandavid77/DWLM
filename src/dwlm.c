@@ -610,7 +610,7 @@ axisnotify(struct wl_listener *listener, void *data)
 	if (scroll_mouse_scroll && selmon
 			&& selmon->lt[selmon->sellt]->arrange == scroll
 			&& scroll_can_pan(selmon)) {
-		if (event->source == WLR_AXIS_SOURCE_CONTINUOUS)
+		if (event->source == WL_POINTER_AXIS_SOURCE_CONTINUOUS)
 			d = event->delta * scroll_continuous_speed;
 		else
 			d = event->delta_discrete * scroll_pixels_per_notch
@@ -626,9 +626,9 @@ axisnotify(struct wl_listener *listener, void *data)
 
 /* Touchpad two-finger swipe: pan the scroll strip (Niri). The gesture
  * listeners are attached to the first pointer device (see createpointer). */
-static struct wl_listener pointerswipebegin;
-static struct wl_listener pointerswipeupdate;
-static struct wl_listener pointerswipeend;
+static struct wl_listener pointerswipebegin_l;
+static struct wl_listener pointerswipeupdate_l;
+static struct wl_listener pointerswipeend_l;
 static int swipe_active;
 static int swipe_attached;
 
@@ -1188,11 +1188,11 @@ createpointer(struct wlr_pointer *pointer)
 	/* Touchpad swipe gestures: attach the listeners to the first pointer
 	 * device (gestures are a per-device libinput signal). */
 	if (!swipe_attached) {
-		LISTEN(&pointer->events.swipe_begin, &pointerswipebegin,
+		LISTEN(&pointer->events.swipe_begin, &pointerswipebegin_l,
 				pointerswipebegin);
-		LISTEN(&pointer->events.swipe_update, &pointerswipeupdate,
+		LISTEN(&pointer->events.swipe_update, &pointerswipeupdate_l,
 				pointerswipeupdate);
-		LISTEN(&pointer->events.swipe_end, &pointerswipeend, pointerswipeend);
+		LISTEN(&pointer->events.swipe_end, &pointerswipeend_l, pointerswipeend);
 		swipe_attached = 1;
 	}
 }
