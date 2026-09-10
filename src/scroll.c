@@ -243,12 +243,20 @@ scroll_focus(const Arg *arg)
 		return;
 	}
 	sel = focustop(selmon);
-	if (!sel || !(col = sel->scol_col))
+	if (!sel || !(col = sel->scol_col)) {
+		fprintf(stderr, "DBGSCROLL focus: early (sel=%p col=%p)\n", sel,
+				sel ? sel->scol_col : NULL);
 		return;
+	}
 	next = (arg->i > 0) ? col->link.next : col->link.prev;
-	if (next == &selmon->scroll.cols)
+	if (next == &selmon->scroll.cols) {
+		fprintf(stderr, "DBGSCROLL focus: edge, ncols=%d\n",
+				wl_list_length(&selmon->scroll.cols));
 		return; /* at the edge; no wrap */
+	}
 	target = wl_container_of(next, target, link);
+	fprintf(stderr, "DBGSCROLL focus: col=%p -> %p\n", (void *)col,
+			(void *)target);
 	scroll_focus_col(selmon, target);
 	arrange(selmon);
 	printstatus();
