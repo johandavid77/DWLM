@@ -24,6 +24,7 @@ cd "$TMP/scenefx"
 dpkg-buildpackage -us -uc -b -d
 
 echo "==> installing packages"
+SUDO=
 [ "$(id -u)" = 0 ] || SUDO=sudo
 DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y \
 	"$TMP"/libscenefx-0.2_*.deb "$TMP"/libscenefx-0.2-dev_*.deb
