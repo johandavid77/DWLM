@@ -295,6 +295,10 @@ config_runtime_reload(void)
 static void
 config_runtime_drain(void)
 {
+	static int ticks;
+	if (ticks < 5)
+		wlr_log(WLR_INFO, "[drain] tick=%d pending=%d", ticks++,
+				config_reload_pending);
 	if (config_reload_pending) {
 		config_reload_pending = 0;
 		config_runtime_reload();
