@@ -206,9 +206,11 @@ scroll(Monitor *m)
 	/* 4. Lay out clients, stacked vertically inside their columns */
 	{
 		struct wlr_box a;
+		double vpx;
+		int yy;
 		scroll_area(m, &a);
-		double vpx = m->scroll.viewport_x;
-		int yy = a.y;
+		vpx = m->scroll.viewport_x;
+		yy = a.y;
 		wl_list_for_each(col, &m->scroll.cols, link) {
 			int n = wl_list_length(&col->clients);
 			double colw = scroll_col_width(m, col);
