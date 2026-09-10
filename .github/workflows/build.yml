@@ -1,0 +1,47 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  debian-trixie:
+    name: Debian Trixie (wlroots 0.18 + scenefx)
+    runs-on: ubuntu-latest
+    container: debian:trixie
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          apt-get update -qq
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            git meson ninja-build pkg-config wayland-protocols \
+            libwayland-bin libwayland-dev libwlroots-0.18-dev \
+            libxkbcommon-dev libinput-dev libxcb-icccm4-dev libxcb1-dev \
+            libpixman-1-dev libgles2-mesa-dev libdrm-dev libgbm-dev \
+            libliftoff-dev libdisplay-info-dev libseat-dev libudev-dev \
+            libpcre2-dev debhelper ca-certificates
+
+      - name: Build and install scenefx 0.2 (debian package)
+        run: ./packaging/build-scenefx.sh
+
+      - name: Build dwlm with zero warnings
+        run: |
+          rm -f src/config.h
+          make 2>&1 | tee /tmp/build.log
+          if grep -iE "warning|error" /tmp/build.log; then
+            echo "build has warnings/errors"
+            exit 1
+          fi
+
+      - name: Smoke test help/man pages are packed
+        run: |
+          test -x ./dwlm
+          test -f src/dwlm.1 src/dwlm.desktop
+
+      - name: dpkg-buildpackage (debian/ en la raíz)
+        run: |
+          dpkg-buildpackage -us -uc -b
+          ls -la ../*.deb
