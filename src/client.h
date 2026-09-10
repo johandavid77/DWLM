@@ -327,9 +327,7 @@ client_send_close(Client *c)
 static inline void
 client_set_border_color(Client *c, const float color[static 4])
 {
-	int i;
-	for (i = 0; i < 4; i++)
-		wlr_scene_rect_set_color(c->border[i], color);
+	wlr_scene_rect_set_color(c->border[0], color);
 }
 
 static inline void

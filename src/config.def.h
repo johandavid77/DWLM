@@ -7,6 +7,7 @@
 static const int sloppyfocus               = 0;  /* focus follows mouse (Niri: keyboard-centric focus) */
 static const int bypass_surface_visibility = 0;  /* 1 means idle inhibitors will disable idle tracking even if it's surface isn't visible  */
 static const unsigned int borderpx         = 3;  /* focus ring thickness */
+static const int corner_radius             = 10; /* rounded window corners (scenefx) */
 static const float rootcolor[]             = COLOR(0x222222ff);
 static const float bordercolor[]           = COLOR(0x222222ff); /* invisible: blends with root */
 static const float focuscolor[]            = COLOR(0x66c2ffff); /* Niri-like focus ring */
@@ -38,7 +39,7 @@ static const Layout layouts[] = {
 };
 
 /* scroll mode tuning */
-static const double scroll_gap = 8.0;               /* px gap between columns/windows */
+static const double scroll_gap = 12.0;              /* px gap between columns/windows */
 static const double scroll_outer_gap = 12.0;        /* px margin around the tiling area */
 static const double scroll_column_width = 0.50;     /* width (screen fraction) of new columns */
 static const double scroll_preset_widths[] = { 0.33, 0.50, 0.67 };

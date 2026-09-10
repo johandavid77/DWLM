@@ -11,7 +11,7 @@ DATADIR = $(PREFIX)/share
 # wlroots package to link against. Debian Trixie ships wlroots 0.18
 # (libwlroots-0.18-dev); Arch Linux and Void Linux ship wlroots 0.20.
 # Leave empty to use an unversioned wlroots.
-WLRROOTS = wlroots-0.18
+WLRROOTS = scenefx
 
 XWAYLAND = -DXWAYLAND
 XLIBS = xcb xcb-icccm
