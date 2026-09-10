@@ -16,7 +16,7 @@ depends=(
   'xcb-util-wm'
   'xwayland'
 )
-makedepends=('git' 'wayland-protocols' 'pkgconfig')
+makedepends=('git' 'wayland-protocols' 'pkgconfig' 'scenefx')
 source=("$pkgname::git+https://github.com/johandavid77/DWLM.git#branch=main")
 sha512sums=('SKIP')
 

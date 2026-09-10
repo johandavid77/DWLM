@@ -11,7 +11,7 @@ maintainer="Johan David <johandavid77@users.noreply.github.com>"
 license="GPL-3.0-or-later"
 hostmakedepends="pkg-config wayland-protocols"
 makedepends="wlroots-devel libinput-devel libxkbcommon-devel xcb-util-wm-devel scenefx-devel"
-depends="xwayland"
+depends="xwayland scenefx"
 conflicts=""
 
 do_build() {
