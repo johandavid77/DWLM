@@ -441,11 +441,11 @@ static xcb_atom_t netatom[NetLast];
 /* attempt to encapsulate suck into one file */
 #include "client.h"
 
-/* runtime TOML overlay + hot-reload (included for single-TU access to config) */
-#include "config_runtime.c"
-
 /* set by the SIGHUP handler; drained by the main-loop timer in config_runtime.c */
 static int config_reload_pending;
+
+/* runtime TOML overlay + hot-reload (included for single-TU access to config) */
+#include "config_runtime.c"
 
 /* function implementations */
 void

@@ -24,6 +24,8 @@
  * Hot-reload: send SIGHUP to the compositor (kill -HUP <pid>). No restart.
  */
 
+#include <ctype.h>
+
 static char *
 config_runtime_trim(char *s)
 {

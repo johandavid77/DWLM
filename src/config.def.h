@@ -43,6 +43,7 @@ static double scroll_gap = 12.0;               /* px gap between columns/windows
 static double scroll_outer_gap = 12.0;         /* px margin around the tiling area */
 static double scroll_width_min = 0.20;        /* grow/shrink clamps */
 static double scroll_width_max = 0.80;
+static double scroll_column_width = 0.50;     /* width (screen fraction) of new columns */
 static double scroll_preset_widths[8] = { 0.33, 0.50, 0.67 };
 static size_t scroll_preset_count = 3;
 
