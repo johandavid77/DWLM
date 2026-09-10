@@ -1603,8 +1603,15 @@ keypress(struct wl_listener *listener, void *data)
 	if (!locked && event->state == WL_KEYBOARD_KEY_STATE_PRESSED) {
 		for (i = 0; i < nsyms; i++)
 			handled = keybinding(mods, syms[i]) || handled;
-		fprintf(stderr, "DBGKEY code=%u handled=%d nsyms=%d\n",
-				event->keycode, handled, nsyms);
+	}
+	{
+		int i;
+		for (i = 0; i < nsyms; i++) {
+			char _n[64];
+			xkb_keysym_get_name(syms[i], _n, sizeof(_n));
+			fprintf(stderr, "DBGKEY code=%u state=%d sym=%s mods=0x%x handled=%d\n",
+					event->keycode, event->state, _n, mods, handled);
+		}
 	}
 
 	if (handled && group->wlr_group->keyboard.repeat_info.delay > 0) {
