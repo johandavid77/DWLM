@@ -1,0 +1,41 @@
+# Maintainer: Johan David <johandavid77@users.noreply.github.com>
+# NOTE: untested (no Arch system available). wlroots-0.20 + scenefx via AUR.
+pkgname=dwlm
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Wlroots Wayland compositor with a Niri-style infinite scroll workspace"
+arch=('x86_64')
+url="https://github.com/johandavid77/DWLM"
+license=('GPL3')
+depends=(
+  'scenefx'         # AUR: wlrfx/scenefx (fx renderer)
+  'wlroots'
+  'wayland'
+  'libinput'
+  'xkeyboard-config'
+  'xcb-util-wm'
+  'xwayland'
+)
+makedepends=('git' 'wayland-protocols' 'pkgconfig')
+source=("$pkgname::git+https://github.com/johandavid77/DWLM.git#branch=main")
+sha512sums=('SKIP')
+
+pkgver() {
+  cd "$pkgname"
+  git describe --tags --abbrev=0 2>/dev/null || echo 0.1.0
+}
+
+build() {
+  cd "$pkgname"
+  make \
+    WLRROOTS="scenefx wlroots" \
+    XWAYLAND=-DXWAYLAND XLIBS="xcb xcb-icccm" \
+    PREFIX=/usr MANDIR=/usr/share/man DATADIR=/usr/share
+}
+
+package() {
+  cd "$pkgname"
+  make install \
+    PREFIX=/usr MANDIR=/usr/share/man DATADIR=/usr/share \
+    DESTDIR="$pkgdir"
+}

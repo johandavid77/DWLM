@@ -1,0 +1,11 @@
+dwlm (0.1.0-1) unstable; urgency=medium
+
+  * Initial release.
+  * Niri-style scroll layout: infinite column strip with animated
+    viewport, wheel/touchpad panning, per-column workspaces, consume/expel.
+  * Hybrid TOML runtime config with SIGHUP hot-reload.
+  * Floating windows with runtime rules and auto-centering.
+  * Whole-column moves between monitors.
+  * XWayland and foreign-toplevel-management support.
+
+ -- Johan David <johandavid77@users.noreply.github.com>  Wed, 09 Sep 2026 21:30:00 -0300

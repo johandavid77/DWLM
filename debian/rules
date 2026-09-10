@@ -1,0 +1,21 @@
+#!/usr/bin/make -f
+# Debian packaging lives at the repo root (debian/), the standard dpkg
+# layout. Build steps run in $(CURDIR) == repo root.
+export DH_VERBOSE = 1
+
+%:
+	dh $@
+
+override_dh_auto_configure:
+# make-only project, nothing to configure
+
+override_dh_auto_build:
+	rm -f src/config.h
+	$(MAKE)
+
+override_dh_auto_install:
+	$(MAKE) install DESTDIR=$(CURDIR)/debian/dwlm \
+		PREFIX=/usr MANDIR=/usr/share/man DATADIR=/usr/share
+
+override_dh_auto_clean:
+	$(MAKE) clean || true

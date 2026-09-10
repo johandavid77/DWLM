@@ -1,0 +1,33 @@
+Source: dwlm
+Section: x11
+Priority: optional
+Maintainer: Johan David <johandavid77@users.noreply.github.com>
+Build-Depends:
+ debhelper-compat (= 13),
+ pkg-config,
+ wayland-protocols,
+ libwayland-bin,
+ libwayland-dev,
+ libwlroots-0.18-dev,
+ libscenefx-0.2-dev,
+ libxkbcommon-dev,
+ libinput-dev,
+ libxcb-icccm4-dev,
+ libxcb1-dev
+Standards-Version: 4.7.0
+Homepage: https://github.com/johandavid77/DWLM
+Vcs-Git: https://github.com/johandavid77/DWLM.git
+
+Package: dwlm
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}, xwayland
+Suggests: foot
+Description: wlroots compositor with an infinite scroll workspace
+ dwlm is a fork of dwl, a tiling Wayland compositor based on wlroots and
+ SceneFX (fx renderer with rounded corners).
+ .
+ It adds a Niri-like horizontal scroll layout: windows stack in columns on
+ an infinite strip that is panned with the mouse wheel or a two-finger
+ touchpad swipe, with an animated viewport, per-column workspaces,
+ rule-based floating windows, and whole-column moves between monitors,
+ alongside the classic dwm tiling layouts.

@@ -1,0 +1,29 @@
+# dwlm — Wlroots Wayland compositor with a Niri-style scroll workspace
+# NOTE: untested (no Void system available). wlroots-0.20 + scenefx required.
+pkgname="dwlm"
+pkgver="0.1.0"
+pkgrel="1"
+pkgdesc="Wlroots Wayland compositor with a Niri-style infinite scroll workspace"
+long_desc="dwlm is a fork of dwl that adds a horizontal scroll layout: windows stack in columns on an infinite strip panned with the wheel or a two-finger touchpad swipe, with an animated viewport, per-column workspaces, rule-based floating windows and whole-column moves between monitors, alongside the classic dwm tiling layouts."
+archs="x86_64"
+homepage="https://github.com/johandavid77/DWLM"
+maintainer="Johan David <johandavid77@users.noreply.github.com>"
+license="GPL-3.0-or-later"
+hostmakedepends="pkg-config wayland-protocols"
+makedepends="wlroots-devel libinput-devel libxkbcommon-devel xcb-util-wm-devel scenefx-devel"
+depends="xwayland"
+conflicts=""
+
+do_build() {
+	: ${makejobs:=1}
+	make -j${makejobs} \
+		WLRROOTS="scenefx wlroots" \
+		XWAYLAND=-DXWAYLAND XLIBS="xcb xcb-icccm" \
+		PREFIX="/usr" MANDIR="/usr/share/man" DATADIR="/usr/share"
+}
+
+do_install() {
+	make install \
+		PREFIX="/usr" MANDIR="/usr/share/man" DATADIR="/usr/share" \
+		DESTDIR="${DESTDIR}"
+}
