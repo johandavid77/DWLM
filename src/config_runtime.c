@@ -226,11 +226,8 @@ config_runtime_reload(void)
 		return;
 
 	f = fopen(path, "r");
-	if (!f) {
-		write(2, "[cfg:nofile]\n", 13);
+	if (!f)
 		return; /* no config file: keep compiled defaults */
-	}
-	write(2, "[cfg:opened]\n", 14);
 
 	while ((cfg = fgets(line, sizeof(line), f))) {
 		char *s = line;
@@ -279,7 +276,6 @@ config_runtime_reload(void)
 	fclose(f);
 
 	config_runtime_apply();
-	write(2, "[cfg:applied]\n", 15);
 
 	wlr_log(WLR_INFO, "[config] reloaded: borderpx=%u radius=%d gap=%.1f "
 			"outer=%.1f min=%.2f max=%.2f presets=%zu "
@@ -294,14 +290,11 @@ config_runtime_reload(void)
 			(unsigned)(focuscolor[2] * 255));
 }
 
-/* Drained by the main-loop poll in run() (see dwlm.c). SIGHUP only flags;
- * the work happens here in the main thread (async-signal-safe). */
+/* Drained by the wl_event_loop_dispatch loop in run() (see dwlm.c).
+ * SIGHUP only flags; the work happens here in the main thread. */
 static void
 config_runtime_drain(void)
 {
-	static int ticks;
-	if (ticks < 5)
-		ticks++, write(2, "[drainwrite]\n", 13);
 	if (config_reload_pending) {
 		config_reload_pending = 0;
 		config_runtime_reload();
