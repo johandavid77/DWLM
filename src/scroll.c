@@ -55,9 +55,11 @@ static double
 scroll_col_width(Monitor *m, ScrollCol *col)
 {
 	struct wlr_box a;
+	double w, max;
+
 	scroll_area(m, &a);
-	double w = col->width * a.width;
-	double max = a.width - 2 * scroll_gap;
+	w = col->width * a.width;
+	max = a.width - 2 * scroll_gap;
 	if (max < 1)
 		max = 1;
 	return w > max ? max : w;
@@ -68,9 +70,11 @@ static double
 scroll_col_x(Monitor *m, ScrollCol *col)
 {
 	struct wlr_box a;
-	scroll_area(m, &a);
 	ScrollCol *c;
-	double x = a.x + scroll_gap;
+	double x;
+
+	scroll_area(m, &a);
+	x = a.x + scroll_gap;
 	wl_list_for_each(c, &m->scroll.cols, link) {
 		if (c == col)
 			return x;
@@ -84,10 +88,12 @@ static void
 scroll_viewport_bounds(Monitor *m, double *lo, double *hi)
 {
 	struct wlr_box a;
-	scroll_area(m, &a);
 	ScrollCol *c;
-	double s0 = a.x + scroll_gap;
-	double s1 = s0;
+	double s0, s1;
+
+	scroll_area(m, &a);
+	s0 = a.x + scroll_gap;
+	s1 = s0;
 	wl_list_for_each(c, &m->scroll.cols, link)
 		s1 += scroll_col_width(m, c) + scroll_gap;
 	*lo = MAX(a.x, s1 - a.width);
@@ -99,9 +105,9 @@ static void
 scroll_ensure_viewport(Monitor *m, ScrollCol *active)
 {
 	struct wlr_box a;
-	scroll_area(m, &a);
 	double lo, hi, vp;
 
+	scroll_area(m, &a);
 	scroll_viewport_bounds(m, &lo, &hi);
 	if (m->scroll.keep_viewport) {
 		m->scroll.keep_viewport = 0;
@@ -282,11 +288,12 @@ scroll_resize_drag(Monitor *m, double cx, double cy)
 	/* Tiled: follow the pointer as the column's right edge */
 	{
 		struct wlr_box a;
+		double wf2;
 		scroll_area(m, &a);
 		left = scroll_col_x(m, col) - m->scroll.viewport_x;
-		wf = (cx - left) / (double)a.width;
+		wf2 = (cx - left) / (double)a.width;
+		wf = MAX(scroll_width_min, MIN(scroll_width_max, wf2));
 	}
-	wf = MAX(scroll_width_min, MIN(scroll_width_max, wf));
 	col->width = wf;
 	arrange(m);
 }
