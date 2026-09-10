@@ -244,8 +244,8 @@ scroll_focus(const Arg *arg)
 	}
 	sel = focustop(selmon);
 	if (!sel || !(col = sel->scol_col)) {
-		fprintf(stderr, "DBGSCROLL focus: early (sel=%p col=%p)\n", sel,
-				sel ? sel->scol_col : NULL);
+		fprintf(stderr, "DBGSCROLL focus: early (sel=%p col=%p)\n", (void *)sel,
+				(void *)(sel ? sel->scol_col : NULL));
 		return;
 	}
 	next = (arg->i > 0) ? col->link.next : col->link.prev;
