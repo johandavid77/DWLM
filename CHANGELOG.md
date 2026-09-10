@@ -18,6 +18,19 @@ Todas las notas de cambio de DWLM se registran aquí.
     timeout) para no hacer trabajo no async-safe dentro del handler.
 - SceneFX 0.2: esquinas redondeadas (corner_radius), renderer fx, anillo de
   foco como card redondeada trasera. Enlace `WLRROOTS = scenefx wlroots-0.18`.
+- Scroll de viewport con rueda/touchpad (Fase 3.9 del roadmap).
+  - Rueda/touchpad panean la franja solo si desborda; si cabe, el axis se
+    reenvía al cliente (scroll interno de apps intacto).
+  - Discreto: `delta_discrete * scroll_pixels_per_notch / 120`; continuo:
+    `delta * scroll_continuous_speed`; fallback a `delta` cuando
+    `delta_discrete == 0` (ruedas de dispositivos virtuales).
+  - Swipe de 2 dedos: panea por `-dx * scroll_continuous_speed`
+    (eventos swipe_begin/update/end, atados solo al primer pointer).
+  - Config: `scroll_mouse_scroll`, `scroll_pixels_per_notch`,
+    `scroll_continuous_speed` en `config.def.h` + claves TOML runtime
+    (`mouse_scroll`, `pixels_per_notch`, `continuous_speed`).
+  - Verificado en VM con virtual pointer (30 notches): `d=180 vp=2928`
+    (clamped al límite del strip), sin crash; HUP con las 3 keys nuevas sin crash.
 - Núcleo del modo scroll estilo Niri sobre dwl 0.7 (`src/scroll.c`, `src/scroll.h`).
   - Columnas apilables en una franja horizontal infinita (consume/expel).
   - Viewport que sigue al foco automáticamente, con clamps de límites.
@@ -35,6 +48,5 @@ Todas las notas de cambio de DWLM se registran aquí.
 - Reglas por app_id/título, tags, monitores.
 
 ### Pendiente
-- Scroll de viewport con touchpad/rueda (Fase 3.9).
 - XWayland habilitado por defecto (actualmente comentado en config.mk).
 - Packaging Debian/Arch/Void (Fase 8).

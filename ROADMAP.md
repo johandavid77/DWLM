@@ -23,7 +23,15 @@
   - [x] 3.6 Consume/expel (apilar/desapilar ventanas)
   - [x] 3.7 Ciclo de anchos (presets 33/50/67%) y grow/shrink
   - [x] 3.8 Centrado de columna
-  - [ ] 3.9 Scroll del viewport con gestos de touchpad y scroll vertical (normalizer)
+  - [x] 3.9 Scroll del viewport con gestos de touchpad y scroll vertical (normalizer)
+    - Rueda/touchpad panean el strip solo si desborda; si cabe, el axis se
+      reenvía al cliente (scroll interno de apps intacto).
+    - Discreto: delta_discrete * scroll_pixels_per_notch / 120; continuo:
+      delta * scroll_continuous_speed; fallback a delta si delta_discrete=0.
+    - Swipe 2 dedos: pan por -dx * scroll_continuous_speed (eventos
+      swipe_begin/update/end, atados solo al primer pointer).
+    - Config: scroll_mouse_scroll, scroll_pixels_per_notch,
+      scroll_continuous_speed (config.def.h) + claves TOML runtime.
   - [ ] 3.10 Refinar animación/eases de viewport
 - [ ] **Fase 4 — Navegación y manipulación estilo Niri**
   - [x] 4.1 Keybindings Niri-style (config.def.h) + fallos de layout dual (tile/scroll)
