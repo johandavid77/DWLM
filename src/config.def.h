@@ -6,12 +6,12 @@
 /* appearance */
 static const int sloppyfocus               = 0;  /* focus follows mouse (Niri: keyboard-centric focus) */
 static const int bypass_surface_visibility = 0;  /* 1 means idle inhibitors will disable idle tracking even if it's surface isn't visible  */
-static const unsigned int borderpx         = 3;  /* focus ring thickness */
-static const int corner_radius             = 10; /* rounded window corners (scenefx) */
-static const float rootcolor[]             = COLOR(0x222222ff);
-static const float bordercolor[]           = COLOR(0x222222ff); /* invisible: blends with root */
-static const float focuscolor[]            = COLOR(0x66c2ffff); /* Niri-like focus ring */
-static const float urgentcolor[]           = COLOR(0xff0000ff);
+static unsigned int borderpx           = 3;   /* focus ring thickness */
+static int corner_radius               = 10;  /* rounded window corners (scenefx) */
+static float rootcolor[4]              = COLOR(0x222222ff);
+static float bordercolor[4]            = COLOR(0x222222ff); /* invisible: blends with root */
+static float focuscolor[4]             = COLOR(0x66c2ffff); /* Niri-like focus ring */
+static float urgentcolor[4]            = COLOR(0xff0000ff);
 /* This conforms to the xdg-protocol. Set the alpha to zero to restore the old behavior */
 static const float fullscreen_bg[]         = {0.1f, 0.1f, 0.1f, 1.0f}; /* You can also use glsl colors */
 
@@ -39,12 +39,12 @@ static const Layout layouts[] = {
 };
 
 /* scroll mode tuning */
-static const double scroll_gap = 12.0;              /* px gap between columns/windows */
-static const double scroll_outer_gap = 12.0;        /* px margin around the tiling area */
-static const double scroll_column_width = 0.50;     /* width (screen fraction) of new columns */
-static const double scroll_preset_widths[] = { 0.33, 0.50, 0.67 };
-static const double scroll_width_min = 0.20;        /* grow/shrink clamps */
-static const double scroll_width_max = 0.80;
+static double scroll_gap = 12.0;               /* px gap between columns/windows */
+static double scroll_outer_gap = 12.0;         /* px margin around the tiling area */
+static double scroll_width_min = 0.20;        /* grow/shrink clamps */
+static double scroll_width_max = 0.80;
+static double scroll_preset_widths[8] = { 0.33, 0.50, 0.67 };
+static size_t scroll_preset_count = 3;
 
 /* monitors */
 /* (x=-1, y=-1) is reserved as an "autoconfigure" monitor position indicator

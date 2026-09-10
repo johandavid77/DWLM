@@ -441,6 +441,12 @@ static xcb_atom_t netatom[NetLast];
 /* attempt to encapsulate suck into one file */
 #include "client.h"
 
+/* runtime TOML overlay + hot-reload (included for single-TU access to config) */
+#include "config_runtime.c"
+
+/* set by the SIGHUP handler; drained by the main-loop timer in config_runtime.c */
+static int config_reload_pending;
+
 /* function implementations */
 void
 applybounds(Client *c, struct wlr_box *bbox)
@@ -1531,6 +1537,9 @@ handlesig(int signo)
 #endif
 	} else if (signo == SIGINT || signo == SIGTERM) {
 		quit(NULL);
+	} else if (signo == SIGHUP) {
+		/* just flag it; the main-loop timer in config_runtime.c drains it */
+		config_reload_pending = 1;
 	}
 }
 
@@ -2486,7 +2495,7 @@ setsel(struct wl_listener *listener, void *data)
 void
 setup(void)
 {
-	int i, sig[] = {SIGCHLD, SIGINT, SIGTERM, SIGPIPE};
+	int i, sig[] = {SIGCHLD, SIGINT, SIGTERM, SIGPIPE, SIGHUP};
 	struct sigaction sa = {.sa_flags = SA_RESTART, .sa_handler = handlesig};
 	sigemptyset(&sa.sa_mask);
 
@@ -2499,6 +2508,9 @@ setup(void)
 	 * clients from the Unix socket, manging Wayland globals, and so on. */
 	dpy = wl_display_create();
 	event_loop = wl_display_get_event_loop(dpy);
+
+	/* runtime config hot-reload timer */
+	config_runtime_init();
 
 	/* The backend is a wlroots feature which abstracts the underlying input and
 	 * output hardware. The autocreate option will choose the most suitable

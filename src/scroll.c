@@ -457,9 +457,9 @@ scroll_cycle_width(const Arg *arg)
 		return;
 
 	idx = selmon->scroll.width_idx + (arg && arg->i ? arg->i : 1);
-	idx %= LENGTH(scroll_preset_widths);
+	idx %= (int)scroll_preset_count;
 	if (idx < 0)
-		idx += LENGTH(scroll_preset_widths);
+		idx += (int)scroll_preset_count;
 	col->width = scroll_preset_widths[idx];
 	selmon->scroll.width_idx = idx;
 	arrange(selmon);
