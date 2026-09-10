@@ -31,6 +31,20 @@ Todas las notas de cambio de DWLM se registran aquí.
     (`mouse_scroll`, `pixels_per_notch`, `continuous_speed`).
   - Verificado en VM con virtual pointer (30 notches): `d=180 vp=2928`
     (clamped al límite del strip), sin crash; HUP con las 3 keys nuevas sin crash.
+- Animación del viewport (Fase 3.10).
+  - Deslizamiento suave con easing linear o cubic ease-in-out
+    (`scroll_anim_ms` / `scroll_anim_ease`, 0 = snap).
+  - El target geométrico se recalcula solo cuando cambia la columna del
+    foco; flag "pinned" persistente para pan/center/resize que la
+    navegación por teclado libera (el strip no vuelve al foco solo).
+  - Pump de frames vía `wl_event_loop_add_timer` (tick ~16 ms).
+- Workspaces por columna (Fase 4.4): Super+Alt+1..9 enfoca la columna N en
+  scroll; en tile es cambiar de tag (view).
+- Floating híbrido (Fase 5).
+  - Reglas runtime `[rules.N]` en config.toml (app_id / title /
+    isfloating / tags); se aplican después de las reglas compiladas.
+  - Las ventanas flotantes nuevas se centran sobre el área visible del
+    viewport en modo scroll (scroll_place_float).
 - Núcleo del modo scroll estilo Niri sobre dwl 0.7 (`src/scroll.c`, `src/scroll.h`).
   - Columnas apilables en una franja horizontal infinita (consume/expel).
   - Viewport que sigue al foco automáticamente, con clamps de límites.
@@ -49,4 +63,5 @@ Todas las notas de cambio de DWLM se registran aquí.
 
 ### Pendiente
 - XWayland habilitado por defecto (actualmente comentado en config.mk).
-- Packaging Debian/Arch/Void (Fase 8).
+- Packaging Debian (Fase 8).
+- Barra de estado / pulido Noctalia (Fases 6-9).

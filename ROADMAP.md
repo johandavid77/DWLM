@@ -32,16 +32,30 @@
       swipe_begin/update/end, atados solo al primer pointer).
     - Config: scroll_mouse_scroll, scroll_pixels_per_notch,
       scroll_continuous_speed (config.def.h) + claves TOML runtime.
-  - [ ] 3.10 Refinar animación/eases de viewport
+  - [x] 3.10 Refinar animación/eases de viewport
+    - Viewport animado (scroll_anim_ms, 0 = snap) con easing lineal o cubic
+      ease-in-out (scroll_anim_ease); el target geométrico se recalcula solo
+      al cambiar de columna → la animación nunca pelea consigo misma.
+    - Pump de frames con wl_event_loop_add_timer (tick 16ms) + flag
+      "pinned" persistente que el pan/center/resize mantienen y la
+      navegación libera (el scroll no "vuelve" al foco mientras arrancas).
+    - Claves TOML runtime: anim_ms, anim_ease.
 - [ ] **Fase 4 — Navegación y manipulación estilo Niri**
   - [x] 4.1 Keybindings Niri-style (config.def.h) + fallos de layout dual (tile/scroll)
   - [x] 4.2 focus first/last, movecol first/last
   - [x] 4.3 Navegación vertical dentro de la columna (focusstack)
-  - [ ] 4.4 Zonas de trabajo / workspaces por columna del scroll (opcional)
+  - [x] 4.4 Zonas de trabajo / workspaces por columna del scroll
+    - Super+Alt+1..9: focus a la columna N del strip (clamps a la última);
+      en layouts tile es "go to workspace N" (view). Misma tecla, dos
+      sentidos.
 - [ ] **Fase 5 — Floating + modo híbrido**
-  - [ ] 5.1 Toggle floating por ventana/regla (ya heredado de dwl)
-  - [ ] 5.2 Reglas por app_id/título en config.toml
-  - [ ] 5.3 Ventanas flotantes centradas junto a la columna activa
+  - [x] 5.1 Toggle floating por ventana/regla (Super+a y botón central del ratón)
+  - [x] 5.2 Reglas por app_id/título en config.toml
+    - `[rules.N]` (1..24) con app_id, title, isfloating, tags; aplicadas
+      después de las reglas compiladas (ganan runtime).
+  - [x] 5.3 Ventanas flotantes centradas junto a la columna activa
+    - Al mapear una ventana flotante en modo scroll se centra en el área
+      visible del viewport (anclada a pantalla).
 - [ ] **Fase 6 — Multi-monitor + workspaces**
   - [ ] 6.1 ScrollState por monitor (ya estructurado)
   - [ ] 6.2 Movimiento de columnas entre monitores
