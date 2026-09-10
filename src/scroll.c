@@ -96,8 +96,14 @@ scroll_viewport_bounds(Monitor *m, double *lo, double *hi)
 	s1 = s0;
 	wl_list_for_each(c, &m->scroll.cols, link)
 		s1 += scroll_col_width(m, c) + scroll_gap;
-	*lo = MAX(a.x, s1 - a.width);
-	*hi = MAX(*lo, s0);
+
+	if (s1 - scroll_gap <= a.x + a.width) {
+		/* The whole strip fits on screen: no scrolling */
+		*lo = *hi = a.x;
+		return;
+	}
+	*lo = a.x;                /* scroll back to the first column */
+	*hi = s1 - a.width;       /* scroll forward to the last column */
 }
 
 /* Scroll the viewport so `active` is visible, or clamp if keep_viewport */
