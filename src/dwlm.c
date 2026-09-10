@@ -14,6 +14,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <wayland-server-core.h>
+#include <wayland-server.h>
 #include <wlr/backend.h>
 #include <wlr/backend/libinput.h>
 #include <wlr/render/allocator.h>
