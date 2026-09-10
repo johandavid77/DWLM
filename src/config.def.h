@@ -142,8 +142,8 @@ static const Key keys[] = {
 	/* scroll mode: focus / move columns (works in tile layout too) */
 	{ MODKEY,                    XKB_KEY_h,          scroll_focus,   {.i = -1} },
 	{ MODKEY,                    XKB_KEY_l,          scroll_focus,   {.i = +1} },
-	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_h,          scroll_movecol, {.i = -1} },
-	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_l,          scroll_movecol, {.i = +1} },
+	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_H,          scroll_movecol, {.i = -1} },
+	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_L,          scroll_movecol, {.i = +1} },
 	{ MODKEY,                    XKB_KEY_Home,       scroll_first,   {0} },
 	{ MODKEY,                    XKB_KEY_End,        scroll_last,    {0} },
 	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_Home,       scroll_movecol_first, {0} },
@@ -158,12 +158,12 @@ static const Key keys[] = {
 	{ MODKEY,                    XKB_KEY_Right,      scroll_focus,   {.i = +1} },
 
 	/* column widths */
-	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_v,          scroll_cycle_width, {0} },
+	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_V,          scroll_cycle_width, {0} },
 	{ MODKEY,                    XKB_KEY_minus,      scroll_width,   {.f = -0.05f} },
 	{ MODKEY,                    XKB_KEY_equal,      scroll_width,   {.f = +0.05f} },
 	{ MODKEY,                    XKB_KEY_c,          scroll_center,  {0} },
 	{ MODKEY,                    XKB_KEY_r,          toggleresize,   {0} },
-	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_r,          toggleresize,   {0} },
+	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_R,          toggleresize,   {0} },
 
 	/* window management */
 	{ MODKEY,                    XKB_KEY_bracketleft,  scroll_consume, {0} },
@@ -175,8 +175,8 @@ static const Key keys[] = {
 	/* layouts */
 	{ MODKEY,                    XKB_KEY_t,          setlayout,      {.v = &layouts[0]} },
 	{ MODKEY,                    XKB_KEY_f,          setlayout,      {.v = &layouts[1]} },
-	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_m,          setlayout,      {.v = &layouts[2]} },
-	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_s,          setlayout,      {.v = &layouts[3]} },
+	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_M,          setlayout,      {.v = &layouts[2]} },
+	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_S,          setlayout,      {.v = &layouts[3]} },
 	{ MODKEY,                    XKB_KEY_space,      setlayout,      {0} },
 	{ MODKEY,                    XKB_KEY_m,          togglemax,      {0} },
 
@@ -197,7 +197,7 @@ static const Key keys[] = {
 	TAGKEYS(          XKB_KEY_8, XKB_KEY_asterisk,                   7),
 	TAGKEYS(          XKB_KEY_9, XKB_KEY_parenleft,                  8),
 
-	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_e,          quit,           {0} },
+	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_E,          quit,           {0} },
 
 	/* Ctrl-Alt-Backspace and Ctrl-Alt-Fx used to be handled by X server */
 	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT,XKB_KEY_Terminate_Server, quit, {0} },
