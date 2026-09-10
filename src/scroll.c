@@ -255,7 +255,7 @@ scroll_focus(const Arg *arg)
 		return; /* at the edge; no wrap */
 	}
 	target = wl_container_of(next, target, link);
-	fprintf(stderr, "DBGSCROLL focus: col=%p -> %p\n", (void *)col,
+fprintf(stderr, "DBGSCROLL focus: col=%p -> %p\n", (void *)col,
 			(void *)target);
 	scroll_focus_col(selmon, target);
 	arrange(selmon);
