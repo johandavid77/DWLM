@@ -3469,8 +3469,8 @@ xwaylandready(struct wl_listener *listener, void *data)
 static const char *const dwlm_logo[] = {
 	"    █        █",
 	"    █        █",
-	"█████ █ █ █  █  █████",
-	"█████ █ █ █  █  █ █ █",
+	"█████   █    █  █████",
+	"█████   █    █  █ █ █",
 	"█████ █████ ███ █ █ █",
 	NULL
 };
