@@ -93,8 +93,13 @@
   - [x] 8.4 CI GitHub Actions: .github/workflows/build.yml (Debian Trixie:
       scenefx deb + make 0-warnings + smoke test + dpkg-buildpackage)
 - [ ] **Fase 9 — Integración Noctalia + pulido**
-  - [ ] 9.1 Probar con Noctalia5
-  - [ ] 9.2 Estado del sistema (status bar, indicators, screen recording)
-  - [ ] 9.3 Documentación final y man page
+  - [x] 9.1 Integración de bar shell: dwlm expone zwlr_foreign_toplevel_manager_v1
+    (verificado con cliente FTM de test); el bar (tipo Noctalia5) es un
+    proyecto C++ aparte que la consumirá
+  - [x] 9.2 Estado del sistema: screen recording vía wlr-screencopy (dwlm.c
+    manager activo); layer-shell + output-power-management e idle-notify
+    disponibles para el bar/indicadores (externos al compositor)
+  - [x] 9.3 Documentación final: man page src/dwlm.1 reescrita (bindings reales
+    + sección scroll + FTM), README actualizado
 
 Total estimado: 24–34 h de desarrollo.

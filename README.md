@@ -15,25 +15,29 @@ recompiling (in the future, a runtime TOML config will be added).
 
 Dependencies:
 
-- wlroots (matching `WLRROOTS` in `config.mk`)
+- wlroots (matching `WLRROOTS` in `config.mk`) and `scenefx`
 - wayland-protocols, wayland-scanner
 - xkbcommon, libinput
-- (optional) XWayland support: librsvg... no, `libxcb-cwm`, `libxcb-icccm`
+- (optional) XWayland support: `libxcb-icccm` (xcb-util-wm)
 
-On Debian Trixie (wlroots 0.18):
+On Debian Trixie (wlroots 0.18), with the manual scenefx 0.2 build:
 
 ```sh
 sudo apt install libwlroots-0.18-dev libwayland-dev wayland-protocols \
-	libxkbcommon-dev libinput-dev
+	libxkbcommon-dev libinput-dev libxcb-icccm4-dev
+./packaging/build-scenefx.sh
 ```
 
-On Arch / Void (wlroots 0.20), set `WLRROOTS = wlroots-0.20` in `config.mk`.
+On Arch / Void (wlroots 0.20), set `WLRROOTS = scenefx wlroots` in
+`config.mk` and install scenefx from the AUR / Void repos.
 
 Build and install:
 
 ```sh
 make
 sudo make install
+# or a proper Debian package:
+dpkg-buildpackage -us -uc -b   # needs the build deps from debian/control
 ```
 
 ## Usage
@@ -109,8 +113,16 @@ layout list.
 - `src/scroll.c` / `src/scroll.h` — the scroll layout (compiled into the same
   translation unit as `dwlm.c`, in the spirit of upstream dwl)
 - `src/config.def.h` — compile-time configuration
-- `packaging/` — Debian, Arch Linux and Void Linux packaging
+- `src/config_runtime.c` — TOML runtime config (scroll params + window rules)
+- `packaging/` — Debian (root `debian/`), Arch Linux and Void Linux packaging
+- `.github/workflows/build.yml` — CI (Debian Trixie, zero-warnings + deb)
 - `ROADMAP.md` — development roadmap
+
+## Status bar
+
+The status bar is a separate project in C++ (in the style of Noctalia5),
+**outside** this repository. dwlm exposes `wlr-foreign-toplevel-management`
+so that bar can track windows (title, app_id, state, placement, close).
 
 ## Credits
 

@@ -1,9 +1,9 @@
-.Dd January 8, 2021
+.Dd September 11, 2026
 .Dt DWLM 1
 .Os
 .Sh NAME
 .Nm dwlm
-.Nd dwm for Wayland
+.Nd wlroots compositor with a Niri-style scroll workspace
 .Sh SYNOPSIS
 .Nm
 .Op Fl v
@@ -11,10 +11,13 @@
 .Op Fl s Ar startup command
 .Sh DESCRIPTION
 .Nm
-is a Wayland compositor based on wlroots.
-It is intended to fill the same space in the Wayland world that
-.Nm dwm
-does for X11.
+is a Wayland compositor based on wlroots, forked from
+.Xr dwl 1 .
+.Pp
+Besides the classic dwm layouts, it ships a horizontal
+.Em scroll
+layout: windows live in columns on an infinite strip, and the viewport
+follows the focused column with an animated pan, in the style of Niri.
 .Pp
 When given the
 .Fl v
@@ -39,66 +42,103 @@ When stopping, it sends
 .Dv SIGTERM
 to the child process and waits for it to exit.
 .Pp
+.Nm
+exposes the
+.Sy zwlr_foreign_toplevel_manager_v1
+protocol so status bars and shell clients can track windows (title, app_id,
+activated/maximized/fullscreen state, output placement and close/activate
+requests).  XWayland clients are supported when built with
+.Dv XWAYLAND .
+.Pp
 Users are encouraged to customize
 .Nm
 by editing the sources, in particular
-.Pa config.h .
-The default key bindings are as follows:
+.Pa src/config.def.h
+(writes to a local
+.Pa src/config.h
+are compiled in).  Runtime rules and scroll parameters can also be tweaked
+from a TOML file; see
+.Pa src/config_runtime.c .
+.Pp
+In the keybindings below Demlo (Mod) is the Super/Logo key:
 .Bl -tag -width 20n -offset indent -compact
-.It Mod-[1-9]
-Show only all windows with a tag.
-.It Mod-Ctrl-[1-9]
-Show all windows with a tag.
-.It Mod-Shift-[1-9]
-Move window to a single tag.
-.It Mod-Ctrl-Shift-[1-9]
-Toggle tag for window.
-.It Mod-p
+.It Ic Mod-P
 Spawn
 .Nm wmenu-run .
-.It Mod-Shift-Return
+.It Ic Mod-Return , Mod-Shift-Return
 Spawn
 .Nm foot .
-.It Mod-[jk]
-Move focus down/up the stack.
-.It Mod-[id]
-Increase/decrease number of windows in master area.
-.It Mod-[hl]
-Decrease/increase master area.
-.It Mod-Return
-Move window on top of stack or switch top of stack with second window.
-.It Mod-Tab
-Show only all windows with previous tag.
-.It Mod-Shift-c
-Close window.
-.It Mod-t
-Switch to tabbed layout.
-.It Mod-f
-Switch to floating layout.
-.It Mod-m
+.It Ic Mod-H/L , Mod-Left/Right
+Focus column left/right in scroll mode.
+.It Ic Mod-J/K , Mod-Up/Down
+Focus the window below/above in the column (stack).
+.It Ic Mod-Shift-H/L
+Move the focused column left/right on the strip.
+.It Ic Mod-Home/End
+Focus the first/last column.
+.It Ic Mod-Ctrl-Home/End
+Move the focused column to the first/last position.
+.It Ic Mod-Shift-V
+Cycle the column width preset (33/50/67 percent).
+.It Ic Mod-minus/equal
+Shrink/grow the column width (master factor while tiling).
+.It Ic Mod-C
+Center the focused column in the viewport.
+.It Ic Mod-R , Mod-Shift-R
+Toggle resize (column) mode.
+.It Ic Mod-bracketleft
+Consume the focused window into the column to its left.
+.It Ic Mod-bracketright
+Expel the focused window into a column of its own.
+.It Ic Mod-A
+Toggle the floating state of the focused window.
+.It Ic Mod-E
+Toggle fullscreen.
+.It Ic Mod-Q
+Close the focused window.
+.It Ic Mod-T / Mod-F
+Switch to tile / floating layout.
+.It Ic Mod-Shift-M
 Switch to monocle layout.
-.It Mod-Space
-Switch to previous layout.
-.It Mod-Shift-Space
-Toggle floating state of window.
-.It Mod-e
-Toggle fullscreen state of window.
-.It Mod-0
-Show all windows.
-.It Mod-Shift-0
-Set all tags for window.
-.It Mod-,
-Move focus to previous monitor.
-.It Mod-.
-Move focus to next monitor.
-.It Mod-Shift-,
-Move window to previous monitor.
-.It Mod-Shift-.
-Move window to next monitor.
-.It Mod-Shift-q
+.It Ic Mod-Shift-S
+Switch to scroll layout.
+.It Ic Mod-Space
+Switch to the previous layout.
+.It Ic Mod-M
+Toggle maximized on the focused window.
+.It Ic Mod-1\(en9
+View workspace N.
+.It Ic Mod-Ctrl-1\(en9
+Toggle workspace N in the view.
+.It Ic Mod-Shift-exclam\(enparenleft
+Tag/untag the focused window to workspace N.
+.It Ic Mod-Ctrl-Shift-exclam\(enparenleft
+Toggle workspace N on the focused window.
+.It Ic Mod-Alt-1\(en9
+Focus the Nth column of the strip (workspace N while tiling).
+.It Ic Mod-0
+View all workspaces.
+.It Ic Mod-Shift-parenright
+Tag the focused window to all workspaces.
+.It Ic Mod-comma/period
+Focus previous/next monitor.
+.It Ic Mod-Shift-less/greater
+Move the focused column to the previous/next monitor.
+.It Ic Mod-Shift-E
 Quit
 .Nm .
 .El
+.Pp
+Mouse bindings:
+.Bl -tag -width 20n -offset indent -compact
+.It Ic Mod-button1
+Drag a floating window (or move a column).
+.It Ic Mod-button3
+Resize a floating window (or a column).
+.It Ic Mod-button2
+Toggle floating state.
+.El
+.Pp
 These might differ depending on your keyboard layout.
 .Sh ENVIRONMENT
 These environment variables are used by
@@ -118,9 +158,6 @@ Various variables specific to wlroots.
 Various variables specific to libxkbcommon.
 .It Ev XCURSOR_PATH
 List of directories to search for XCursor themes in.
-.It Ev HOME
-A directory where there are always dear files there for you.
-Waiting for you to clean them up.
 .El
 .Pp
 These are set by
@@ -136,16 +173,25 @@ tell how to connect to the
 .Nm Xwayland
 server.
 .El
+.Sh FILES
+.Bl -tag -width src/config.def.h
+.It Pa src/config.def.h
+Default compile-time configuration and keybindings.
+.It Pa src/config_runtime.c
+TOML runtime configuration of scroll parameters and window rules.
+.El
 .Sh EXAMPLES
 Start
 .Nm
-with s6 in the background:
-.Dl dwlm \-s \(aqs6\-svscan <&\-\(aq
+with a terminal and a bar shell client:
+.Dl dwlm -s "foot"
 .Sh SEE ALSO
 .Xr foot 1 ,
 .Xr wmenu 1 ,
+.Xr dwl 1 ,
 .Xr dwm 1 ,
-.Xr xkeyboard-config 7
+.Xr xkeyboard-config 7 ,
+.Xr niri 1
 .Sh CAVEATS
 The child process's standard input is connected with a pipe to
 .Nm .
