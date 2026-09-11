@@ -142,6 +142,7 @@ layout list.
 - `src/config_runtime.c` — TOML runtime config (scroll params + window rules)
 - `packaging/` — Debian (root `debian/`), Arch Linux and Void Linux packaging
 - `.github/workflows/build.yml` — CI (Debian Trixie, zero-warnings + deb)
+- `dwlm.svg` — el logo de dwlm, basado en el logo original de DWM
 - `ROADMAP.md` — development roadmap
 
 ## Status bar
