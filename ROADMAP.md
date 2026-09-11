@@ -88,7 +88,16 @@
     - `packaging/build-scenefx.sh`: construir+instalar scenefx como .deb.
     - Probado en VM end-to-end: `dpkg-buildpackage -us -uc -b` genera
       dwlm_0.1.0-1_amd64.deb (Depends correctos), tras scenefx vía apt.
-  - [ ] 8.2 Arch: packaging/arch/PKGBUILD (wlroots 0.20 + scenefx AUR) — sin probar
+  - [x] 8.2 Arch: packaging/arch/PKGBUILD — probado en Arch real (2026)
+    - dwlm apunta a wlroots 0.18 → en Arch actual se construyen `wlroots0.18`
+      + `scenefx-0.2` desde AUR (instalan los pkg-config versionados
+      `wlroots-0.18.pc` / `scenefx-0.2.pc`, que el PKGBUILD usa).
+    - `wlroots0.18` necesita 2 fixes para compilar con las libs de Arch 2026:
+      `LIBINPUT_SWITCH_KEYPAD_SLIDE` en backend/libinput/switch.c y
+      `-Dwerror=false` (libinput/libxcb más nuevos que el código).
+    - Probado end-to-end: build AUR → makepkg dwlm → instalar → `dwlm -v`
+      + compositor arrancando con virtio-gpu (cursor por software) vía ly.
+      Receta completa en packaging/arch/README.md.
   - [ ] 8.3 Void: packaging/void/template (wlroots-0.20 free) — sin probar
   - [x] 8.4 CI GitHub Actions: .github/workflows/build.yml (Debian Trixie:
       scenefx deb + make 0-warnings + smoke test + dpkg-buildpackage)

@@ -39,7 +39,9 @@ workflow `build`.
 sistema Arch actual. dwlm apunta a wlroots 0.18, así que en Arch primero hay que
 construir `wlroots0.18` y `scenefx-0.2` desde el AUR (instalan los archivos
 pkg-config versionados `wlroots-0.18.pc` / `scenefx-0.2.pc`, que el PKGBUILD
-usa).
+usa). `wlroots0.18` necesita un par de arreglos de compatibilidad para compilar
+con los paquetes de Arch actuales — la receta probada completa está en
+`packaging/arch/README.md`.
 
 **Void Linux** — empaquetado en `packaging/void` (template), pero **todavía sin
 probar** (no hay sistema Void disponible); trátalo como trabajo en curso.
@@ -97,7 +99,8 @@ sudo apt install libwlroots-0.18-dev libwayland-dev wayland-protocols \
 ```
 
 En Arch usa el PKGBUILD de `packaging/arch` (probado; requiere `wlroots0.18`
-y `scenefx-0.2` del AUR). En Void usa `packaging/void` (sin probar).
+y `scenefx-0.2` del AUR — receta completa en `packaging/arch/README.md`).
+En Void usa `packaging/void` (sin probar).
 Alternativamente, compila contra un wlroots 0.20 del sistema poniendo
 `WLRROOTS = scenefx wlroots` en `config.mk` e instalando un scenefx
 compatible con wlroots 0.20 desde el AUR / los repos de Void.
@@ -113,7 +116,11 @@ dpkg-buildpackage -us -uc -b   # necesita las dependencias de build de debian/co
 
 ## Uso
 
-Añade una entrada de sesión:
+`make install` ya deja una entrada `dwlm.desktop` en
+`share/wayland-sessions`, que los display managers (ly, greetd, GDM, SDDM…)
+detectan solos. Para añadirla a mano, guárdala como `dwlm.desktop` en
+`/usr/share/wayland-sessions` (sistema) o `~/.local/share/wayland-sessions`
+(por usuario):
 
 ```
 [Desktop Entry]
@@ -122,6 +129,28 @@ Comment=dwm para Wayland con modo de scroll estilo Niri
 Exec=dwlm
 Type=Application
 ```
+
+Opciones de línea de comandos:
+
+- `dwlm` — arranque normal
+- `dwlm -s "foot"` — arrancar también un programa (p. ej. una terminal)
+- `dwlm -d` — logging completo de wlroots con debug
+- `dwlm -v` — imprime el logo y la versión, y sale
+
+## Solución de problemas
+
+- **`Mod+Return`/`Mod+P` no hacen nada.** El `termcmd`/`menucmd` por defecto
+  son `foot` y `wmenu-run`; el compositor no trae aplicaciones. Instálalos
+  (Debian: `sudo apt install foot wmenu`, Arch: `sudo pacman -S foot wmenu`).
+- **Cursor invertido/distorcionado en una VM (VirtIO, VMware).** Desactiva el
+  cursor de hardware de KMS (wlroots dibuja el sprite sobre una GPU virtual):
+  `Exec=/usr/bin/env WLR_NO_HARDWARE_CURSORS=1 dwlm`.
+- **ly aborta el login con `FileNotFound`.** El `session_log` de ly apunta a
+  `~/.local/state/ly-session.log` y ly no crea ese directorio; ejecuta
+  `mkdir -p ~/.local/state` primero.
+- **Arch: el `wlroots0.18` de AUR no compila** (`-Werror=switch`,
+  `-Werror=discarded-qualifiers`) con los paquetes actuales. La receta probada
+  está en `packaging/arch/README.md`.
 
 ## Atajos de teclado (por defecto)
 
@@ -138,7 +167,8 @@ Scroll/navegación (funcionan tanto en tile como en scroll):
 | `Mod+Home` / `Mod+End` | enfocar primera / última columna|
 | `Mod+Ctrl+Home/End`| mover columna al inicio / final     |
 | `Mod+J` / `Mod+K`  | enfocar ventana de abajo / arriba   |
-| `Mod+R`            | ciclar ancho de columna (33/50/67%) |
+| `Mod+Shift+V`      | ciclar ancho de columna (33/50/67%) |
+| `Mod+R` / `Mod+Shift+R` | alternar modo redimensionado  |
 | `Mod+-` / `Mod+=`  | encoger / agrandar ancho de columna |
 | `Mod+C`            | centrar la columna enfocada         |
 | `Mod+[`            | consumir ventana en la columna de la izquierda |
@@ -150,16 +180,19 @@ Gestión de apps/ventanas:
 |--------------------|---------------------------------|
 | `Mod+Q`            | cerrar ventana                  |
 | `Mod+A`            | alternar flotante               |
-| `Mod+E`            | alternar pantalla completa      |
-| `Mod+T/F/M`        | layout tile / floating / monocle|
-| `Mod+Shift+S`      | layout scroll                   |
+| `Mod+E`           | alternar pantalla completa      |
+| `Mod+M`           | alternar maximizado             |
+| `Mod+T/F`         | layout tile / floating          |
+| `Mod+Shift+M`     | layout monocle                  |
+| `Mod+Shift+S`     | layout scroll                   |
 | `Mod+Space`        | alternar al layout anterior     |
 | `Mod+Shift+Return` | abrir terminal (`foot`)         |
 | `Mod+P`            | abrir menú (`wmenu-run`)        |
 | `Mod+Shift+E`      | salir de dwlm                   |
 
 Tags/workspaces: `Mod+1..9` ver, `Mod+Shift+1..9` asignar, `Mod+Ctrl+1..9`
-alternar vista, etc. Navegación de escritorios: `Mod+,`/`Mod+.` enfocar
+alternar vista, etc. `Mod+Alt+1..9` enfoca la columna N del scroll (workspace
+N en tiling). Navegación de escritorios: `Mod+,`/`Mod+.` enfocar
 monitor, `Mod+Shift+<`/`>` enviar a monitor.
 
 Todos los atajos se definen en `src/config.def.h`; mira el array `keys[]` y la
@@ -180,8 +213,8 @@ lista de layouts.
 - `src/config.def.h` — configuración en tiempo de compilación
 - `src/config_runtime.c` — config TOML en tiempo de ejecución (parámetros del
   scroll + reglas de ventana)
-- `packaging/` — Debian (`debian/` en la raíz), Arch Linux (PKGBUILD, probado)
-  y Void (template, sin probar)
+- `packaging/` — Debian (`debian/` en la raíz), Arch Linux (PKGBUILD + receta
+  README, probado) y Void (template, sin probar)
 - `.github/workflows/build.yml` — CI (Debian Trixie, zero-warnings + deb)
 - `dwlm.svg` — el logo de dwlm, basado en el logo original de DWM
 - `dwlm-banner.png` — banner del README

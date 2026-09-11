@@ -67,6 +67,13 @@ Todas las notas de cambio de DWLM se registran aquí.
     (XWayland, `title='johan@dwlm: ~'` `app_id='XTerm'`) y un foot (`foot`).
 - Construcción con wlroots configurable (0.18 para Debian Trixie, 0.20 para
   Arch/Void) vía `WLRROOTS` en `config.mk`.
+- Soporte probado en Arch Linux (2026): PKGBUILD adaptado a `wlroots0.18` y
+  `scenefx-0.2` (AUR) y a los pkg-config versionados `wlroots-0.18` /
+  `scenefx-0.2`. Receta completa (con los fixes de compatibilidad que
+  necesita `wlroots0.18` contra las libs de Arch 2026) en
+  `packaging/arch/README.md`. Verificado end-to-end: build AUR → makepkg →
+  instalación → `dwlm -v` + compositor corriendo en virtio-gpu vía ly
+  (auto-login con `WLR_NO_HARDWARE_CURSORS=1` para el cursor software).
 - Renombrado de dwl → dwlm (binario, .desktop, man page).
 
 ### Heredado de dwl 0.7
@@ -80,8 +87,8 @@ Todas las notas de cambio de DWLM se registran aquí.
   wlroots-0.18 (ext-optimized-sync) y diferido para el bar shell (la FTM
   clásica ya cubre la integración).
 - Packaging Debian (Fase 8): cerrado (dwlm_0.1.0-1_amd64.deb + CI GitHub
-  Actions en verde; probado en VM y en el runner). PKGBUILD Arch y template
-  Void provistos, sin probar.
+  Actions en verde; probado en VM y en el runner). PKGBUILD Arch probado;
+  template Void y un posible APKBUILD Alpine quedan pendientes de prueba.
 - Barra de estado: **proyecto nuevo en C++** (tipo Noctalia5), fuera de
   dwlm; dwlm expone wlr-foreign-toplevel-management para su integración.
 - Pulido final y man page (Fase 9).
