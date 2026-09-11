@@ -1,5 +1,8 @@
 /* config_runtime.c -- tiny TOML-style runtime configuration overlay.
  *
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ * See LICENSE file for copyright and license details.
+ *
  * Included directly into dwlm.c (after config.h/client.h) so it can mutate
  * the config.def.h default variables at runtime without losing the suckless
  * "edit + rebuild" workflow when no config file exists.

@@ -189,5 +189,13 @@ cerrar).
 
 ## Créditos
 
-Fork de [dwl](https://codeberg.org/dwl/dwl) (MIT). El diseño del layout scroll
+Fork de [dwl](https://codeberg.org/dwl/dwl). El diseño del layout scroll
 está inspirado en Niri. Ver `LICENSE*` para los detalles.
+
+## Licencia
+
+GPL-3.0-or-later — ver [LICENSE](LICENSE). La atribución y nota de licencia de
+dwl viven en [LICENSE.dwl](LICENSE.dwl); las licencias MIT de los upstream
+están en `LICENSE.tinywl`, `LICENSE.dwm` y `LICENSE.sway`.
+
+<a href="LICENSE"><img alt="Licencia: GPLv3" src="https://img.shields.io/badge/Licencia-GPLv3-blue.svg"></a>

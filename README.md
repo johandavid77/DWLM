@@ -185,5 +185,13 @@ so that bar can track windows (title, app_id, state, placement, close).
 
 ## Credits
 
-Forked from [dwl](https://codeberg.org/dwl/dwl) (MIT). Scroll layout design
+Forked from [dwl](https://codeberg.org/dwl/dwl). Scroll layout design
 inspired by Niri. See `LICENSE*` for details.
+
+## License
+
+GPL-3.0-or-later — see [LICENSE](LICENSE). dwl's attribution and license note
+live in [LICENSE.dwl](LICENSE.dwl); upstream MIT licenses are in
+`LICENSE.tinywl`, `LICENSE.dwm` and `LICENSE.sway`.
+
+<a href="LICENSE"><img alt="License: GPLv3" src="https://img.shields.io/badge/license-GPLv3-blue.svg"></a>

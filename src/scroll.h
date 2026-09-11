@@ -1,5 +1,6 @@
 /*
  * DWLM scroll mode: Niri-style horizontal scrolling layout, adapted to dwl.
+ * SPDX-License-Identifier: GPL-3.0-or-later
  * See LICENSE file for copyright and license details.
  *
  * The scroll mode is compiled as part of the single translation unit dwlm.c
