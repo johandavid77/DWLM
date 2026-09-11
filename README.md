@@ -117,12 +117,6 @@ Exec=dwlm
 Type=Application
 ```
 
-Then pick *dwlm* from your display manager, or start it directly:
-
-```sh
-dwlm -s "foot"
-```
-
 ## Keybindings (default)
 
 The default layout is tiling, mirroring dwl. Scroll mode is one *layout*

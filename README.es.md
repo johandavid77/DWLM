@@ -118,12 +118,6 @@ Exec=dwlm
 Type=Application
 ```
 
-Después elige *dwlm* desde tu gestor de sesión, o arráncalo directamente:
-
-```sh
-dwlm -s "foot"
-```
-
 ## Atajos de teclado (por defecto)
 
 El layout por defecto es tiling, igual que dwl. El modo scroll es un *layout*
