@@ -32,9 +32,6 @@ wget -qO dwlm.deb https://github.com/johandavid77/DWLM/releases/latest/download/
 sudo apt install ./dwlm.deb
 ```
 
-Después elige *dwlm* desde tu gestor de sesión, o arráncalo directamente con
-`dwlm -s "foot"`.
-
 Cada ejecución del CI también sube el `.deb` más reciente como *artefacto* del
 workflow `build`.
 
