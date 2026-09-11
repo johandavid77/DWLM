@@ -43,6 +43,15 @@ usa). `wlroots0.18` necesita un par de arreglos de compatibilidad para compilar
 con los paquetes de Arch actuales — la receta probada completa está en
 `packaging/arch/README.md`.
 
+**Alpine Linux 3.24** — se puede generar un `.apk` con
+`packaging/alpine/build-apk.sh` (probado). Receta completa en
+`packaging/alpine/README.md`. En un sistema limpio:
+
+```sh
+apk add wlroots0.19 scenefx wayland libxkbcommon libinput xcb-util-wm xwayland
+apk add --allow-untrusted ./dwlm-0.1.0-r0.apk
+```
+
 **Void Linux** — empaquetado en `packaging/void` (template), pero **todavía sin
 probar** (no hay sistema Void disponible); trátalo como trabajo en curso.
 
@@ -100,6 +109,9 @@ sudo apt install libwlroots-0.18-dev libwayland-dev wayland-protocols \
 
 En Arch usa el PKGBUILD de `packaging/arch` (probado; requiere `wlroots0.18`
 y `scenefx-0.2` del AUR — receta completa en `packaging/arch/README.md`).
+En Alpine 3.24 usa el APKBUILD de `packaging/alpine` (probado; compila contra
+`wlroots0.19` y `scenefx-0.4` de los repos oficiales — receta y script de
+build en `packaging/alpine/README.md`).
 En Void usa `packaging/void` (sin probar).
 Alternativamente, compila contra un wlroots 0.20 del sistema poniendo
 `WLRROOTS = scenefx wlroots` en `config.mk` e instalando un scenefx
@@ -141,7 +153,8 @@ Opciones de línea de comandos:
 
 - **`Mod+Return`/`Mod+P` no hacen nada.** El `termcmd`/`menucmd` por defecto
   son `foot` y `wmenu-run`; el compositor no trae aplicaciones. Instálalos
-  (Debian: `sudo apt install foot wmenu`, Arch: `sudo pacman -S foot wmenu`).
+  (Debian: `sudo apt install foot wmenu`, Arch: `sudo pacman -S foot wmenu`,
+  Alpine: `apk add foot wmenu`).
 - **Cursor invertido/distorcionado en una VM (VirtIO, VMware).** Desactiva el
   cursor de hardware de KMS (wlroots dibuja el sprite sobre una GPU virtual):
   `Exec=/usr/bin/env WLR_NO_HARDWARE_CURSORS=1 dwlm`.
@@ -214,7 +227,8 @@ lista de layouts.
 - `src/config_runtime.c` — config TOML en tiempo de ejecución (parámetros del
   scroll + reglas de ventana)
 - `packaging/` — Debian (`debian/` en la raíz), Arch Linux (PKGBUILD + receta
-  README, probado) y Void (template, sin probar)
+  README, probado), Alpine Linux (APKBUILD + receta README + script de build,
+  probado) y Void (template, sin probar)
 - `.github/workflows/build.yml` — CI (Debian Trixie, zero-warnings + deb)
 - `dwlm.svg` — el logo de dwlm, basado en el logo original de DWM
 - `dwlm-banner.png` — banner del README

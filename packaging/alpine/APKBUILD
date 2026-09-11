@@ -1,0 +1,42 @@
+# Maintainer: Johan David <johandavid77@users.noreply.github.com>
+# NOTE: Alpine 3.24 ships wlroots 0.19 (`wlroots0.19`) and scenefx 0.4
+# (`scenefx`), whose versioned pkg-config files are `wlroots-0.19.pc` and
+# `scenefx-0.4.pc`. dwlm builds against them via WLRROOTS.
+# (Alpine 3.22 ships wlroots 0.18 but has no scenefx; use 3.24.)
+#
+# The source is a `git archive` of the repo at build time (there is no
+# v0.1.0 tag yet). build-apk.sh regenerates the tarball and refreshes the
+# sha512 below automatically; if you build by hand, refresh it the same way:
+#   git archive --format=tar.gz --prefix=dwlm-0.1.0/ -o dwlm-0.1.0.tar.gz HEAD
+#   sha512sum dwlm-0.1.0.tar.gz
+pkgname=dwlm
+pkgver=0.1.0
+pkgrel=0
+pkgdesc="Wlroots Wayland compositor with a Niri-style infinite scroll workspace"
+url="https://github.com/johandavid77/DWLM"
+arch="all"
+license="GPL-3.0-or-later"
+options="!check"
+depends="wlroots0.19 scenefx wayland libxkbcommon libinput xcb-util-wm xwayland"
+makedepends="git wayland-protocols pkgconf wlroots0.19-dev scenefx-dev"
+subpackages=""
+source="dwlm-$pkgver.tar.gz"
+sha512sums="SKIP  dwlm-$pkgver.tar.gz"
+
+builddir="$srcdir/dwlm-$pkgver"
+
+build() {
+	cd "$builddir"
+	make \
+		WLRROOTS="scenefx-0.4 wlroots-0.19" \
+		XWAYLAND=-DXWAYLAND XLIBS="xcb xcb-icccm" \
+		PREFIX=/usr MANDIR=/usr/share/man DATADIR=/usr/share
+}
+
+package() {
+	cd "$builddir"
+	make install \
+		PREFIX=/usr MANDIR=/usr/share/man DATADIR=/usr/share \
+		DESTDIR="$pkgdir"
+	gzip -9 "$pkgdir/usr/share/man/man1/dwlm.1"
+}

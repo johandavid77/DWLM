@@ -11,5 +11,6 @@ config.h
 
 # packaging build dirs
 *.tar.gz
+packaging/alpine/out/
 # upstream dwl reference clone (not part of this repo)
 dwl-upstream/
