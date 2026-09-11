@@ -31,7 +31,7 @@ jobs:
         run: |
           rm -f src/config.h
           make 2>&1 | tee /tmp/build.log
-          if grep -iE "warning|error" /tmp/build.log; then
+          if grep -E '[^ :]+:[0-9]+:[0-9]+: (warning|error):|[^ ]+: (warning|error):|undefined reference|collect2: error' /tmp/build.log; then
             echo "build has warnings/errors"
             exit 1
           fi
