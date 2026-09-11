@@ -62,9 +62,10 @@
     - Super+Shift+< / >: la columna enfocada completa (con su pila de ventanas)
       salta al monitor adyacente; vista scroll inserta la columna tras la
       columna activa del destino y enfoca su cima; layout tile cae en tagmon.
-  - [ ] 6.3 Barra de estado (dwl blocks) adaptada a scroll
-    - **Pospuesto**: la barra será un proyecto nuevo en C++ (tipo Noctalia5);
-      dwlm expone wlr-foreign-toplevel-management para facilitarlo.
+  - [x] 6.3 Barra de estado
+    - **Cerrado**: la barra será un proyecto nuevo en C++ (tipo Noctalia5),
+      fuera de dwlm; dwlm ya expone wlr-foreign-toplevel-management para la
+      integración (verificado con el cliente de test FTM).
 - [ ] **Fase 7 — Protocolos Wayland**
   - [x] 7.1 xdg-shell completo, layer-shell, XDG decoration (heredados)
   - [x] 7.2 XWayland en Debian (config.mk ya activo: -DXWAYLAND + xcb/xcb-icccm;
