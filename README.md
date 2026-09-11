@@ -6,6 +6,27 @@
 
 **dwm for Wayland with a Niri-style scroll mode.**
 
+## Install
+
+**Debian 13 (Trixie)** — ready-made package. Grab
+[`dwlm_0.1.0-1_amd64.deb`](https://github.com/johandavid77/DWLM/releases/latest)
+from GitHub Releases and:
+
+```sh
+./packaging/build-scenefx.sh                 # builds + installs libscenefx-0.2 (one-off)
+sudo apt install ./dwlm_0.1.0-1_amd64.deb    # from the release, or built with dpkg-buildpackage
+```
+
+XWayland apps need the `xwayland` package too.
+
+Each CI run also uploads the fresh `.deb` as an *artifact* of the `build`
+workflow.
+
+**Arch Linux / Void Linux** — packaging provided under `packaging/arch`
+(PKGBUILD) and `packaging/void` (template), but **not yet tested** (no Arch/Void
+system available). Treat them as work-in-progress; upstream dwl-style build
+(`config.mk`, `WLRROOTS = scenefx wlroots`) should get you there on wlroots 0.20.
+
 ## The philosophy
 
 DWLM is built on three ideas that, combined, shape everything else:
@@ -58,8 +79,9 @@ sudo apt install libwlroots-0.18-dev libwayland-dev wayland-protocols \
 ./packaging/build-scenefx.sh
 ```
 
-On Arch / Void (wlroots 0.20), set `WLRROOTS = scenefx wlroots` in
-`config.mk` and install scenefx from the AUR / Void repos.
+On Arch / Void (wlroots 0.20) use the packaging under `packaging/` (currently
+untested), or set `WLRROOTS = scenefx wlroots` in `config.mk` and install
+scenefx from the AUR / Void repos.
 
 Build and install:
 
@@ -144,9 +166,11 @@ layout list.
   translation unit as `dwlm.c`, in the spirit of upstream dwl)
 - `src/config.def.h` — compile-time configuration
 - `src/config_runtime.c` — TOML runtime config (scroll params + window rules)
-- `packaging/` — Debian (root `debian/`), Arch Linux and Void Linux packaging
+- `packaging/` — Debian (root `debian/`), Arch Linux (PKGBUILD) and Void
+  (template) packaging — Arch/Void untested
 - `.github/workflows/build.yml` — CI (Debian Trixie, zero-warnings + deb)
 - `dwlm.svg` — el logo de dwlm, basado en el logo original de DWM
+- `dwlm-banner.png` — banner del README
 - `ROADMAP.md` — development roadmap
 
 ## Status bar
