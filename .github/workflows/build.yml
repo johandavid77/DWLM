@@ -39,7 +39,8 @@ jobs:
       - name: Smoke test help/man pages are packed
         run: |
           test -x ./dwlm
-          test -f src/dwlm.1 src/dwlm.desktop
+          test -f src/dwlm.1
+          test -f src/dwlm.desktop
 
       - name: dpkg-buildpackage (debian/ en la raíz)
         run: |
