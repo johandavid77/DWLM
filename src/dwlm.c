@@ -3464,6 +3464,30 @@ xwaylandready(struct wl_listener *listener, void *data)
 }
 #endif
 
+/* dwlm logo, based on the original dwm logo (Anselm R. Garbe / suckless.org,
+ * CC BY): the same stacked-horizontal-bar font, spelling "dwlm". */
+static const char *const dwlm_logo[] = {
+	"    █       █",
+	"    █       █",
+	"█████  █    █  █████",
+	"█████  █    █  █ █ █",
+	"█████ ████ ███ █ █ █",
+	NULL
+};
+
+static void
+logo(void)
+{
+	int i;
+
+	for (i = 0; dwlm_logo[i]; i++) {
+		fputs(dwlm_logo[i], stderr);
+		fputc('\n', stderr);
+	}
+
+	fprintf(stderr, "dwlm " VERSION "\n");
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -3475,8 +3499,10 @@ main(int argc, char *argv[])
 			startup_cmd = optarg;
 		else if (c == 'd')
 			log_level = WLR_DEBUG;
-		else if (c == 'v')
-			die("dwlm " VERSION);
+		else if (c == 'v') {
+			logo();
+			exit(EXIT_FAILURE);
+		}
 		else
 			goto usage;
 	}
