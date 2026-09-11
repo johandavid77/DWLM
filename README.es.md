@@ -232,6 +232,7 @@ lista de layouts.
 - `.github/workflows/build.yml` — CI (Debian Trixie, zero-warnings + deb)
 - `dwlm.svg` — el logo de dwlm, basado en el logo original de DWM
 - `dwlm-banner.png` — banner del README
+- `dwlm-social.png` — imagen de vista previa social (ajustes del repo en GitHub)
 - `README.es.md` — este documento en español
 - `ROADMAP.md` — hoja de ruta de desarrollo
 
