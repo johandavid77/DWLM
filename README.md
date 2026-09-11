@@ -1,6 +1,10 @@
 # DWLM
 
 <p align="center">
+  <b>English</b> · <a href="README.es.md">Español</a>
+</p>
+
+<p align="center">
   <img src="dwlm-banner.png" alt="dwlm" width="640">
 </p>
 
