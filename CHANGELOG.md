@@ -74,6 +74,14 @@ Todas las notas de cambio de DWLM se registran aquí.
   `packaging/arch/README.md`. Verificado end-to-end: build AUR → makepkg →
   instalación → `dwlm -v` + compositor corriendo en virtio-gpu vía ly
   (auto-login con `WLR_NO_HARDWARE_CURSORS=1` para el cursor software).
+- Soporte probado en Alpine Linux 3.24: build contra
+  `WLRROOTS="scenefx-0.4 wlroots-0.19"` y `.apk` 0.1.0-r0 generado con abuild
+  (wlroots0.19 + scenefx de los repos oficiales de Alpine).
+- Compatibilidad con wlroots 0.19+ vía guardas de versión en el Makefile
+  (`-DWLR_VERSION_0_19`): renames `wlr_xdg_surface_get_geometry` (→ campo
+  `geometry` de `wlr_xdg_surface`), `wlr_xwayland_surface_override_redirect_
+  wants_focus` / `wlr_xwayland_surface_icccm_input_model`, y
+  `wlr_presentation_create(dpy, backend, 1)`. Sin impacto en 0.18 (Debian/Arch).
 - Renombrado de dwl → dwlm (binario, .desktop, man page).
 
 ### Heredado de dwl 0.7
@@ -87,8 +95,8 @@ Todas las notas de cambio de DWLM se registran aquí.
   wlroots-0.18 (ext-optimized-sync) y diferido para el bar shell (la FTM
   clásica ya cubre la integración).
 - Packaging Debian (Fase 8): cerrado (dwlm_0.1.0-1_amd64.deb + CI GitHub
-  Actions en verde; probado en VM y en el runner). PKGBUILD Arch probado;
-  template Void y un posible APKBUILD Alpine quedan pendientes de prueba.
+  Actions en verde; probado en VM y en el runner). PKGBUILD Arch y Alpine
+  (apk 0.1.0-r0) probados; template Void queda pendiente de prueba.
 - Barra de estado: **proyecto nuevo en C++** (tipo Noctalia5), fuera de
   dwlm; dwlm expone wlr-foreign-toplevel-management para su integración.
 - Pulido final y man page (Fase 9).

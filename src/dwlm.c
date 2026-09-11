@@ -2769,7 +2769,11 @@ setup(void)
 	wlr_viewporter_create(dpy);
 	wlr_single_pixel_buffer_manager_v1_create(dpy);
 	wlr_fractional_scale_manager_v1_create(dpy, 1);
+	#if WLR_VERSION_0_19
+	wlr_presentation_create(dpy, backend, 1);
+#else
 	wlr_presentation_create(dpy, backend);
+#endif
 	wlr_alpha_modifier_v1_create(dpy);
 
 	/* Initializes the interface used to implement urgency hints */

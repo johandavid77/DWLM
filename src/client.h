@@ -134,7 +134,6 @@ client_get_appid(Client *c)
 static inline void
 client_get_clip(Client *c, struct wlr_box *clip)
 {
-	struct wlr_box xdg_geom = {0};
 	*clip = (struct wlr_box){
 		.x = 0,
 		.y = 0,
@@ -147,9 +146,15 @@ client_get_clip(Client *c, struct wlr_box *clip)
 		return;
 #endif
 
+#if WLR_VERSION_0_19
+	clip->x = c->surface.xdg->geometry.x;
+	clip->y = c->surface.xdg->geometry.y;
+#else
+	struct wlr_box xdg_geom = {0};
 	wlr_xdg_surface_get_geometry(c->surface.xdg, &xdg_geom);
 	clip->x = xdg_geom.x;
 	clip->y = xdg_geom.y;
+#endif
 }
 
 static inline void
@@ -164,7 +169,11 @@ client_get_geometry(Client *c, struct wlr_box *geom)
 		return;
 	}
 #endif
+	#if WLR_VERSION_0_19
+	*geom = c->surface.xdg->geometry;
+#else
 	wlr_xdg_surface_get_geometry(c->surface.xdg, geom);
+#endif
 }
 
 static inline Client *
@@ -388,9 +397,15 @@ static inline int
 client_wants_focus(Client *c)
 {
 #ifdef XWAYLAND
+#if WLR_VERSION_0_19
+	return client_is_unmanaged(c)
+		&& wlr_xwayland_surface_override_redirect_wants_focus(c->surface.xwayland)
+		&& wlr_xwayland_surface_icccm_input_model(c->surface.xwayland) != WLR_ICCCM_INPUT_MODEL_NONE;
+#else
 	return client_is_unmanaged(c)
 		&& wlr_xwayland_or_surface_wants_focus(c->surface.xwayland)
 		&& wlr_xwayland_icccm_input_model(c->surface.xwayland) != WLR_ICCCM_INPUT_MODEL_NONE;
+#endif
 #endif
 	return 0;
 }

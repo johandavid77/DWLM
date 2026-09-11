@@ -16,6 +16,16 @@ PKGS      = $(WLRROOTS) wayland-server xkbcommon libinput $(XLIBS)
 DWLCFLAGS = `$(PKG_CONFIG) --cflags $(PKGS)` $(DWLCPPFLAGS) $(DWLDEVCFLAGS) $(CFLAGS)
 LDLIBS    = `$(PKG_CONFIG) --libs $(PKGS)` -lm $(LIBS)
 
+# wlroots version detection (API compat).
+# dwlm follows the dwl 0.18 API; wlroots 0.19+ renamed some helpers
+# (wlr_xdg_surface_get_geometry, wlr_xwayland_[or_surface_]wants_focus,
+# wlr_xwayland_icccm_input_model) and wlr_presentation_create() gained a
+# version argument. The base wlroots package is the last word of WLRROOTS.
+WLR_VERSION := $(shell $(PKG_CONFIG) --modversion $(lastword $(WLRROOTS)) 2>/dev/null)
+ifneq ($(filter 0.19% 0.20%,$(WLR_VERSION)),)
+DWLCPPFLAGS += -DWLR_VERSION_0_19
+endif
+
 # source layout (dwlm keeps sources in src/, packaging in packaging/)
 SRC = src
 OBJ = $(SRC)/dwlm.o $(SRC)/util.o

@@ -99,6 +99,17 @@
       + compositor arrancando con virtio-gpu (cursor por software) vía ly.
       Receta completa en packaging/arch/README.md.
   - [ ] 8.3 Void: packaging/void/template (wlroots-0.20 free) — sin probar
+  - [x] 8.5 Alpine 3.24: apk para wlroots-0.19 + scenefx-0.4 (0.19.3/0.4.1)
+    - dwl 0.7 apunta a wlroots 0.18; el port a 0.19+ queda guardado por
+      versión (`-DWLR_VERSION_0_19`, detectado en el Makefile): se renombran
+      `wlr_xdg_surface_get_geometry` (→ campo `geometry`), los helpers de
+      xwayland (`wlr_xwayland_surface_override_redirect_wants_focus`,
+      `wlr_xwayland_surface_icccm_input_model`) y
+      `wlr_presentation_create()` gana el argumento de versión.
+    - Build en contenedor podman `alpine:3.24` (make 0-warnings), `dwlm -v` +
+      ldd resolviendo `libwlroots-0.19.so`/`libscenefx-0.4.so`.
+    - Empaquetado `.apk` 0.1.0-r0 con abuild (unsigned, instala con
+      `apk add --allow-untrusted`); depende de wlroots0.19/scenefx/xwayland.
   - [x] 8.4 CI GitHub Actions: .github/workflows/build.yml (Debian Trixie:
       scenefx deb + make 0-warnings + smoke test + dpkg-buildpackage)
 - [ ] **Fase 9 — Integración Noctalia + pulido**
