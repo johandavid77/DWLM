@@ -22,7 +22,7 @@ jobs:
             libxkbcommon-dev libinput-dev libxcb-icccm4-dev libxcb1-dev \
             libpixman-1-dev libgles2-mesa-dev libdrm-dev libgbm-dev \
             libliftoff-dev libdisplay-info-dev libseat-dev libudev-dev \
-            libpcre2-dev debhelper ca-certificates
+            libpcre2-dev debhelper ca-certificates build-essential
 
       - name: Build and install scenefx 0.2 (debian package)
         run: ./packaging/build-scenefx.sh
