@@ -12,16 +12,27 @@
 
 ## Install
 
-**Debian 13 (Trixie)** — ready-made package. Grab
-[`dwlm_0.1.0-1_amd64.deb`](https://github.com/johandavid77/DWLM/releases/latest)
-from GitHub Releases and:
+**Debian 13 (Trixie)** — a ready-made `.deb` is attached to
+[GitHub Releases](https://github.com/johandavid77/DWLM/releases/latest). On a
+fresh system:
 
 ```sh
-./packaging/build-scenefx.sh                 # builds + installs libscenefx-0.2 (one-off)
-sudo apt install ./dwlm_0.1.0-1_amd64.deb    # from the release, or built with dpkg-buildpackage
+# 1. build tools + libraries (scenefx 0.2 needs them to compile)
+sudo apt install git debhelper meson ninja-build pkg-config \
+	libwlroots-0.18-dev libwayland-dev wayland-protocols \
+	libxkbcommon-dev libinput-dev libxcb-icccm4-dev \
+	libpixman-1-dev libgbm-dev libdrm-dev xwayland
+
+# 2. the only missing dependency: scenefx 0.2 (not in Debian's repos)
+git clone https://github.com/johandavid77/DWLM && cd DWLM
+./packaging/build-scenefx.sh
+
+# 3. dwlm itself
+wget -qO dwlm.deb https://github.com/johandavid77/DWLM/releases/latest/download/dwlm_0.1.0-1_amd64.deb
+sudo apt install ./dwlm.deb
 ```
 
-XWayland apps need the `xwayland` package too.
+Then pick *dwlm* from your display manager, or `dwlm -s "foot"` directly.
 
 Each CI run also uploads the fresh `.deb` as an *artifact* of the `build`
 workflow.
