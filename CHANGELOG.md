@@ -79,9 +79,9 @@ Todas las notas de cambio de DWLM se registran aquí.
 - Ext-optimized-sync / ext-foreign-toplevel-list: sin soporte en
   wlroots-0.18 (ext-optimized-sync) y diferido para el bar shell (la FTM
   clásica ya cubre la integración).
-- Packaging Debian (Fase 8): done en VM (dwlm_0.1.0-1_amd64.deb con
-  Depends sobre libscenefx-0.2 + xwayland); PKGBUILD Arch y template Void
-  sin probar; CI .github listo pero sin publicar (requiere scope workflow).
+- Packaging Debian (Fase 8): cerrado (dwlm_0.1.0-1_amd64.deb + CI GitHub
+  Actions en verde; probado en VM y en el runner). PKGBUILD Arch y template
+  Void provistos, sin probar.
 - Barra de estado: **proyecto nuevo en C++** (tipo Noctalia5), fuera de
   dwlm; dwlm expone wlr-foreign-toplevel-management para su integración.
 - Pulido final y man page (Fase 9).

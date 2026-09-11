@@ -89,9 +89,8 @@
       dwlm_0.1.0-1_amd64.deb (Depends correctos), tras scenefx vía apt.
   - [ ] 8.2 Arch: packaging/arch/PKGBUILD (wlroots 0.20 + scenefx AUR) — sin probar
   - [ ] 8.3 Void: packaging/void/template (wlroots-0.20 free) — sin probar
-  - [ ] 8.4 CI fixture: .github/workflows/build.yml (Debian Trixie:
-      scenefx deb + make zero-warnings + dpkg-buildpackage)
-    - Pendiente de publicar: requiere scope `workflow` en el token de GitHub
+  - [x] 8.4 CI GitHub Actions: .github/workflows/build.yml (Debian Trixie:
+      scenefx deb + make 0-warnings + smoke test + dpkg-buildpackage)
 - [ ] **Fase 9 — Integración Noctalia + pulido**
   - [ ] 9.1 Probar con Noctalia5
   - [ ] 9.2 Estado del sistema (status bar, indicators, screen recording)
