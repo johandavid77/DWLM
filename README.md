@@ -35,10 +35,13 @@ sudo apt install ./dwlm.deb
 Each CI run also uploads the fresh `.deb` as an *artifact* of the `build`
 workflow.
 
-**Arch Linux / Void Linux** — packaging provided under `packaging/arch`
-(PKGBUILD) and `packaging/void` (template), but **not yet tested** (no Arch/Void
-system available). Treat them as work-in-progress; upstream dwl-style build
-(`config.mk`, `WLRROOTS = scenefx wlroots`) should get you there on wlroots 0.20.
+**Arch Linux** — packaging under `packaging/arch` (PKGBUILD), **tested** on a
+current Arch system. dwlm targets wlroots 0.18, so on Arch you first build
+`wlroots0.18` and `scenefx-0.2` from the AUR (they install the versioned
+pkg-config files `wlroots-0.18.pc` / `scenefx-0.2.pc`, which the PKGBUILD uses).
+
+**Void Linux** — packaging under `packaging/void` (template) but **not yet
+tested** (no Void system available); treat it as work-in-progress.
 
 ## The philosophy
 
@@ -92,9 +95,11 @@ sudo apt install libwlroots-0.18-dev libwayland-dev wayland-protocols \
 ./packaging/build-scenefx.sh
 ```
 
-On Arch / Void (wlroots 0.20) use the packaging under `packaging/` (currently
-untested), or set `WLRROOTS = scenefx wlroots` in `config.mk` and install
-scenefx from the AUR / Void repos.
+On Arch use the PKGBUILD under `packaging/arch` (tested; needs `wlroots0.18`
+and `scenefx-0.2` from the AUR). On Void use `packaging/void` (untested).
+Alternatively build against a system wlroots 0.20 by setting
+`WLRROOTS = scenefx wlroots` in `config.mk` and installing a wlroots 0.20-
+compatible scenefx from the AUR / Void repos.
 
 Build and install:
 
@@ -173,8 +178,8 @@ layout list.
   translation unit as `dwlm.c`, in the spirit of upstream dwl)
 - `src/config.def.h` — compile-time configuration
 - `src/config_runtime.c` — TOML runtime config (scroll params + window rules)
-- `packaging/` — Debian (root `debian/`), Arch Linux (PKGBUILD) and Void
-  (template) packaging — Arch/Void untested
+- `packaging/` — Debian (root `debian/`), Arch Linux (PKGBUILD, tested) and
+  Void (template, untested) packaging
 - `.github/workflows/build.yml` — CI (Debian Trixie, zero-warnings + deb)
 - `dwlm.svg` — el logo de dwlm, basado en el logo original de DWM
 - `dwlm-banner.png` — banner del README

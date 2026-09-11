@@ -1,5 +1,8 @@
 # Maintainer: Johan David <johandavid77@users.noreply.github.com>
-# NOTE: untested (no Arch system available). wlroots-0.20 + scenefx via AUR.
+# NOTE: built against wlroots 0.18 + scenefx 0.2 (dwlm targets wlroots 0.18).
+# On current Arch those live in the AUR as `wlroots0.18` and `scenefx-0.2`,
+# which install the versioned pkg-config files `wlroots-0.18.pc` and
+# `scenefx-0.2.pc`.
 pkgname=dwlm
 pkgver=0.1.0
 pkgrel=1
@@ -8,15 +11,15 @@ arch=('x86_64')
 url="https://github.com/johandavid77/DWLM"
 license=('GPL3')
 depends=(
-  'scenefx'         # AUR: wlrfx/scenefx (fx renderer)
-  'wlroots'
+  'scenefx-0.2'      # AUR: wlrfx/scenefx (fx renderer), wlroots 0.18
+  'wlroots0.18'      # AUR: wlroots 0.18
   'wayland'
   'libinput'
   'xkeyboard-config'
   'xcb-util-wm'
-  'xwayland'
+  'xorg-xwayland'
 )
-makedepends=('git' 'wayland-protocols' 'pkgconfig' 'scenefx')
+makedepends=('git' 'wayland-protocols' 'pkgconf' 'scenefx-0.2' 'wlroots0.18')
 source=("$pkgname::git+https://github.com/johandavid77/DWLM.git#branch=main")
 sha512sums=('SKIP')
 
@@ -28,7 +31,7 @@ pkgver() {
 build() {
   cd "$pkgname"
   make \
-    WLRROOTS="scenefx wlroots" \
+    WLRROOTS="scenefx-0.2 wlroots-0.18" \
     XWAYLAND=-DXWAYLAND XLIBS="xcb xcb-icccm" \
     PREFIX=/usr MANDIR=/usr/share/man DATADIR=/usr/share
 }
