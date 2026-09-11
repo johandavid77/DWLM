@@ -1,5 +1,9 @@
 # DWLM
 
+<p align="center">
+  <img src="dwlm-banner.png" alt="dwlm" width="640">
+</p>
+
 **dwm for Wayland with a Niri-style scroll mode.**
 
 ## The philosophy
