@@ -2,14 +2,40 @@
 
 **dwm for Wayland with a Niri-style scroll mode.**
 
-DWLM is a fork of [dwl](https://codeberg.org/dwl/dwl) that adds a horizontally
-scrolling "scroll" layout inspired by [Niri](https://github.com/YaLTeR/niri):
-windows live in columns on an infinite strip, the viewport scrolls to follow
-the focused column, and each column can hold a stack of windows.
+## The philosophy
 
-It stays true to the suckless philosophy: a small, hackable C codebase built
-on wlroots. Configuration is done by editing `src/config.def.h` and
-recompiling (in the future, a runtime TOML config will be added).
+DWLM is built on three ideas that, combined, shape everything else:
+
+**Suckless.** A small, readable C codebase built on
+[wlroots](https://gitlab.freedesktop.org/wlroots/wlroots). There is no giant
+config file to tame and no settings UI to dig through: the whole system fits
+in a phone screen of source code, and if you want it different you edit
+`src/config.def.h` and recompile. What the upstream dwm/dwl authors call "the
+right thing as a bare-bones, non-bloated program".
+
+**dwm's tiling.** Tiling done the dwm way: no decorations to drag, no
+overlapping windows to babysit. The keyboard is the input device — every
+action is a key away, with no hidden menus to discover. Tags are the
+workspaces, and `Mod+1..9` moves you around them while `Mod+Shift+E` is
+the only "settings menu" you will ever need: the exit.
+
+**The infinite scroll.** From [Niri](https://github.com/YaLTeR/niri) DWLM
+borrows its most liberating idea: instead of a fixed grid of workspaces, the
+desktop is an *infinite horizontal strip*. Every window you open becomes a
+column, the viewport follows your focus with a smooth pan, and your session
+scales with you — you never run out of workspaces, you never have to decide
+in advance "how many" you need. Each column can still hold a vertical stack
+of windows, and the whole thing fades into classic dwm layouts (`tile`,
+`floating`, `monocle`) whenever you want them.
+
+The result keeps the suckless principle — hack all of it, understand all of
+it — while borrowing the scroll philosophy: *the desktop should grow with
+you, not stay still.*
+
+DWLM is a fork of [dwl](https://codeberg.org/dwl/dwl) that takes this a step
+further: the scroll mode is not a patch on top, it is a layout the compositor
+understands natively, with animated viewport, per-monitor strips, floating
+windows anchored to the visible area and whole-column moves between monitors.
 
 ## Building
 
