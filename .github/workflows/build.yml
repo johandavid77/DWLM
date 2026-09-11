@@ -45,4 +45,11 @@ jobs:
       - name: dpkg-buildpackage (debian/ en la raíz)
         run: |
           dpkg-buildpackage -us -uc -b
-          ls -la ../*.deb
+          cp ../dwlm_*.deb .
+
+      - name: Upload .deb artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dwlm-deb
+          path: dwlm_*.deb
+          if-no-files-found: error
