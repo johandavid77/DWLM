@@ -3467,11 +3467,11 @@ xwaylandready(struct wl_listener *listener, void *data)
 /* dwlm logo, based on the original dwm logo (Anselm R. Garbe / suckless.org,
  * CC BY): the same stacked-horizontal-bar font, spelling "dwlm". */
 static const char *const dwlm_logo[] = {
-	"    █       █",
-	"    █       █",
-	"█████  █    █  █████",
-	"█████  █    █  █ █ █",
-	"█████ ████ ███ █ █ █",
+	"    █        █",
+	"    █        █",
+	"█████ █ █ █  █  █████",
+	"█████ █ █ █  █  █ █ █",
+	"█████ █████ ███ █ █ █",
 	NULL
 };
 
