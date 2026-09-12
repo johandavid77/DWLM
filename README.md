@@ -22,9 +22,16 @@ Tested across five distros (see [`packaging/`](packaging/) for each recipe):
 
 ## Install
 
-**Debian 13 (Trixie)** — a ready-made `.deb` is attached to
-[GitHub Releases](https://github.com/johandavid77/DWLM/releases/latest). On a
-fresh system:
+Expand the tab for your distro (the full tested recipe of each lives in
+`packaging/<distro>/` or, for Debian, in the `debian/` folder at the root):
+
+<details>
+<summary><b>Debian 13 (Trixie)</b> — ready-made <code>.deb</code> <kbd>tested</kbd></summary>
+
+A ready-made `.deb` is attached to
+[GitHub Releases](https://github.com/johandavid77/DWLM/releases/latest)
+(each CI run also uploads the fresh `.deb` as an artifact of the `build`
+workflow). On a fresh system:
 
 ```sh
 # 1. build tools + libraries (scenefx 0.2 needs them to compile)
@@ -42,37 +49,74 @@ wget -qO dwlm.deb https://github.com/johandavid77/DWLM/releases/latest/download/
 sudo apt install ./dwlm.deb
 ```
 
-Each CI run also uploads the fresh `.deb` as an *artifact* of the `build`
-workflow.
+</details>
 
-**Arch Linux** — packaging under `packaging/arch` (PKGBUILD), **tested** on a
-current Arch system. dwlm targets wlroots 0.18, so on Arch you first build
-`wlroots0.18` and `scenefx-0.2` from the AUR (they install the versioned
-pkg-config files `wlroots-0.18.pc` / `scenefx-0.2.pc`, which the PKGBUILD uses).
-`wlroots0.18` needs a couple of compatibility fixes to build with current Arch
-packages — the full tested recipe is in `packaging/arch/README.md`.
+<details>
+<summary><b>Arch Linux</b> — PKGBUILD <kbd>tested</kbd> <kbd>2026</kbd></summary>
 
-**Alpine Linux 3.24** — an `.apk` can be built with
-`packaging/alpine/build-apk.sh` (tested). See `packaging/alpine/README.md`
-for the full recipe. On a fresh system:
+`packaging/arch` has a PKGBUILD. dwlm targets wlroots 0.18, so on Arch you
+first build `wlroots0.18` and `scenefx-0.2` from the AUR (they install the
+versioned pkg-config files `wlroots-0.18.pc` / `scenefx-0.2.pc`, which the
+PKGBUILD uses). `wlroots0.18` needs a couple of compatibility fixes to
+build with current Arch packages — the full tested recipe is in
+[`packaging/arch/README.md`](packaging/arch/README.md).
+
+```sh
+cd packaging/arch
+makepkg -f --noconfirm --skippgpcheck
+sudo pacman -U dwlm-*.pkg.tar.zst
+```
+
+</details>
+
+<details>
+<summary><b>Alpine Linux 3.24</b> — <code>.apk</code> <kbd>tested</kbd></summary>
+
+Build the `.apk` with `packaging/alpine/build-apk.sh` (or follow the native
+recipe in [`packaging/alpine/README.md`](packaging/alpine/README.md)). On a
+fresh system:
 
 ```sh
 apk add wlroots0.19 scenefx wayland libxkbcommon libinput xcb-util-wm xwayland
 apk add --allow-untrusted ./dwlm-0.1.0-r0.apk
 ```
 
-**Void Linux** — packaging under `packaging/void` (template + `build-xbps.sh`),
-**tested** against the official `xbps-src` buildkit. Void ships `wlroots0.19`
-and `scenefx` (0.4) in the repos — the template's runtime deps are collected
-by the repo build (incl. `xorg-server-xwayland`). Build and recipe in
-`packaging/void/README.md`.
+</details>
 
-**Fedora 44** — dwlm also builds against **wlroots 0.20** (with scenefx 0.5).
-Fedora ships `wlroots` 0.20 but no scenefx, so `packaging/fedora` snap-builds
-scenefx 0.5 and dwlm as RPMs (`build-dwlm.sh`, tested): `scenefx`, `scenefx-devel`
-and `dwlm` `.rpm` files plus a full recipe in `packaging/fedora/README.md`. The
-wlroots 0.20 API changes (xwayland cursor buffer, corner radius, xdg-shell
-constants) are handled in `src/dwlm.c` behind `#if WLR_VERSION_0_20`.
+<details>
+<summary><b>Void Linux</b> — <code>.xbps</code> <kbd>tested</kbd> <kbd>xbps-src</kbd></summary>
+
+`packaging/void` has a template + `build-xbps.sh`, validated against the
+official `xbps-src` buildkit. Void ships `wlroots0.19` and `scenefx` (0.4)
+in the repos — the template's runtime deps are collected by the repo build
+(incl. `xorg-server-xwayland`). Recipe:
+[`packaging/void/README.md`](packaging/void/README.md).
+
+```sh
+sudo xbps-install ./dwlm-0.1.0_1.x86_64.xbps
+```
+
+</details>
+
+<details>
+<summary><b>Fedora 44</b> — three <code>.rpm</code> <kbd>tested</kbd></summary>
+
+Fedora ships `wlroots` 0.20 but no scenefx, so `packaging/fedora`
+snap-builds scenefx 0.5 and dwlm as RPMs — `scenefx`, `scenefx-devel`
+and `dwlm`. Recipe:
+[`packaging/fedora/README.md`](packaging/fedora/README.md).
+
+```sh
+sudo dnf install ./scenefx-0.5-1.fc44.x86_64.rpm \
+                 ./scenefx-devel-0.5-1.fc44.x86_64.rpm \
+                 ./dwlm-0.1.0-1.fc44.x86_64.rpm
+```
+
+The wlroots 0.20 API changes (xwayland cursor buffer, corner radius,
+xdg-shell constants) are handled in `src/dwlm.c` behind
+`#if WLR_VERSION_0_20`.
+
+</details>
 
 ## The philosophy
 
