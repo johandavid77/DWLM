@@ -77,11 +77,25 @@ Todas las notas de cambio de DWLM se registran aquí.
 - Soporte probado en Alpine Linux 3.24: build contra
   `WLRROOTS="scenefx-0.4 wlroots-0.19"` y `.apk` 0.1.0-r0 generado con abuild
   (wlroots0.19 + scenefx de los repos oficiales de Alpine).
+- Soporte probado en Void Linux: template + `build-xbps.sh` validados contra
+  el buildkit oficial `xbps-src`; `dwlm-0.1.0_1.x86_64.xbps` construido con
+  deps runtime recogidas por el repo (incl. `xorg-server-xwayland`; Void no
+  tiene virtual `xwayland`). Build y receta en `packaging/void/README.md`.
+- Soporte probado en Fedora 44: `packaging/fedora` construye scenefx 0.5
+  (el flavor de wlroots 0.20, ausente en los repos de Fedora) y dwlm como
+  RPMs (specs + `build-dwlm.sh`, end-to-end en contenedor). Se instalan
+  `scenefx`, `scenefx-devel` y `dwlm` `.rpm`; el resto de deps (wlroots,
+  xwayland) se resuelven de los repos de Fedora.
 - Compatibilidad con wlroots 0.19+ vía guardas de versión en el Makefile
   (`-DWLR_VERSION_0_19`): renames `wlr_xdg_surface_get_geometry` (→ campo
   `geometry` de `wlr_xdg_surface`), `wlr_xwayland_surface_override_redirect_
   wants_focus` / `wlr_xwayland_surface_icccm_input_model`, y
   `wlr_presentation_create(dpy, backend, 1)`. Sin impacto en 0.18 (Debian/Arch).
+- Compatibilidad con wlroots 0.20 (`-DWLR_VERSION_0_20`, Fedora): las
+  constantes de xdg-shell ya no se re-exportan (se incluye
+  `xdg-shell-protocol.h`), los corner helpers pierden `corner_location`, y
+  `wlr_xwayland_set_cursor` pasa a tomar un `struct wlr_buffer *` (los
+  píxeles del XCursor se envuelven en un wlr_buffer de solo lectura).
 - Renombrado de dwl → dwlm (binario, .desktop, man page).
 
 ### Heredado de dwl 0.7
@@ -94,9 +108,9 @@ Todas las notas de cambio de DWLM se registran aquí.
 - Ext-optimized-sync / ext-foreign-toplevel-list: sin soporte en
   wlroots-0.18 (ext-optimized-sync) y diferido para el bar shell (la FTM
   clásica ya cubre la integración).
-- Packaging Debian (Fase 8): cerrado (dwlm_0.1.0-1_amd64.deb + CI GitHub
-  Actions en verde; probado en VM y en el runner). PKGBUILD Arch y Alpine
-  (apk 0.1.0-r0) probados; template Void queda pendiente de prueba.
+- Packaging (Fase 8): Debian (dwlm_0.1.0-1_amd64.deb + CI GitHub Actions en
+  verde), Arch (PKGBUILD), Alpine (apk 0.1.0-r0), Void (xbps 0.1.0_1 vía
+  xbps-src) y Fedora (rpms scenefx 0.5 + dwlm, wlroots 0.20) probados.
 - Barra de estado: **proyecto nuevo en C++** (tipo Noctalia5), fuera de
   dwlm; dwlm expone wlr-foreign-toplevel-management para su integración.
 - Pulido final y man page (Fase 9).

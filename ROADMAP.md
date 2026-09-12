@@ -98,7 +98,34 @@
     - Probado end-to-end: build AUR → makepkg dwlm → instalar → `dwlm -v`
       + compositor arrancando con virtio-gpu (cursor por software) vía ly.
       Receta completa en packaging/arch/README.md.
-  - [ ] 8.3 Void: packaging/void/template (wlroots-0.20 free) — sin probar
+  - [x] 8.3 Void: packaging/void/template + build-xbps.sh — **probado** con
+        el buildkit oficial xbps-src (2026)
+    - Void trae `wlroots0.19` (0.19.3) y `scenefx` (0.4.1) en repos; los
+      pkg-config son `wlroots-0.19`/`scenefx-0.4` (WLRROOTS).
+    - Incompatibilidad backend: el resolver xbps ad-hoc (xbps-install en
+      contenedor sin chroot) falla con `can't guess pkgname for dependency`,
+      incluso con paquetes canario → validación end-to-end vía `xbps-src`
+      (binary-bootstrap en chroot, `./xbps-src pkg dwlm`).
+    - No existe virtual `xwayland` para depender de él: el template hace
+      `depends="xorg-server-xwayland scenefx"` y las deps runtime del repo
+      quedan recogidas automáticamente.
+    - Entregable: `hostdir/binpkgs/dwlm-0.1.0_1.x86_64.xbps` (instala con
+      `sudo xbps-install ./dwlm-0.1.0_1.x86_64.xbps`), en packaging/void/out.
+  - [x] 8.6 Fedora 44: packaging/fedora — rpms de scenefx 0.5 + dwlm 0.20
+    - Fedora trae `wlroots` 0.20 (pkg-config `wlroots-0.20`), sin scenefx.
+      scenefx 0.5 = el flavor de wlroots 0.20 (repo wlrfx/scenefx; 0.2/0.4
+      apuntan a wlroots más viejos); requiere `lcms2` nuevo.
+    - Port a wlroots 0.20 en src/dwlm.c detrás de `-DWLR_VERSION_0_20`:
+      xdg-shell constants antes re-exportadas (ahora `#include
+      "xdg-shell-protocol.h"`), corner helpers sin `corner_location`, y
+      `wlr_xwayland_set_cursor` ahora toma `struct wlr_buffer*` (se envuelven
+      los píxeles del xcursor en un wlr_buffer de solo lectura).
+    - `scenefx.spec` (+scenefx-devel) hace snap-build del tag 0.5;
+      `dwlm.spec` BuildRequires scenefx-devel y compila contra
+      `scenefx-0.5 wlroots-0.20`. `build-dwlm.sh` lo automatiza todo en un
+      contenedor fedora:latest desechable.
+    - Probado end-to-end: build rpm en contenedor → instalar los 3 rpms en
+      Fedora limpio (deps del repo resueltas solas) → `dwlm -v` + ldd limpio.
   - [x] 8.5 Alpine 3.24: apk para wlroots-0.19 + scenefx-0.4 (0.19.3/0.4.1)
     - dwl 0.7 apunta a wlroots 0.18; el port a 0.19+ queda guardado por
       versión (`-DWLR_VERSION_0_19`, detectado en el Makefile): se renombran

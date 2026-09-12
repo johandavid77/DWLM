@@ -1,23 +1,24 @@
+# Template file for 'dwlm'
 # dwlm — Wlroots Wayland compositor with a Niri-style scroll workspace
-# NOTE: untested (no Void system available). wlroots-0.20 + scenefx required.
-pkgname="dwlm"
-pkgver="0.1.0"
-pkgrel="1"
-pkgdesc="Wlroots Wayland compositor with a Niri-style infinite scroll workspace"
-long_desc="dwlm is a fork of dwl that adds a horizontal scroll layout: windows stack in columns on an infinite strip panned with the wheel or a two-finger touchpad swipe, with an animated viewport, per-column workspaces, rule-based floating windows and whole-column moves between monitors, alongside the classic dwm tiling layouts."
-archs="x86_64"
-homepage="https://github.com/johandavid77/DWLM"
+# Built against Void's wlroots0.19 + scenefx (pkg-config: wlroots-0.19, scenefx-0.4).
+pkgname=dwlm
+version=0.1.0
+revision=1
+short_desc="Wlroots Wayland compositor with a Niri-style scroll workspace"
 maintainer="Johan David <johandavid77@users.noreply.github.com>"
 license="GPL-3.0-or-later"
+homepage="https://github.com/johandavid77/DWLM"
+distfiles="https://github.com/johandavid77/DWLM/archive/93bc40b.tar.gz"
+checksum=835632677e30370cd9abe7b920e0e3e5eed9d24dc812fc33df750ff5555744fa
 hostmakedepends="pkg-config wayland-protocols"
-makedepends="wlroots-devel libinput-devel libxkbcommon-devel xcb-util-wm-devel scenefx-devel"
-depends="xwayland scenefx"
-conflicts=""
+makedepends="wlroots0.19-devel libinput-devel libxkbcommon-devel xcb-util-wm-devel scenefx-devel"
+depends="xorg-server-xwayland scenefx"
 
 do_build() {
-	: ${makejobs:=1}
-	make -j${makejobs} \
-		WLRROOTS="scenefx wlroots" \
+	makejobs="${makejobs:-1}"
+	[ "${makejobs}" -gt 0 ] 2>/dev/null || makejobs=1
+	make -j"${makejobs}" \
+		WLRROOTS="scenefx-0.4 wlroots-0.19" \
 		XWAYLAND=-DXWAYLAND XLIBS="xcb xcb-icccm" \
 		PREFIX="/usr" MANDIR="/usr/share/man" DATADIR="/usr/share"
 }

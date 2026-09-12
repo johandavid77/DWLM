@@ -51,8 +51,18 @@ apk add wlroots0.19 scenefx wayland libxkbcommon libinput xcb-util-wm xwayland
 apk add --allow-untrusted ./dwlm-0.1.0-r0.apk
 ```
 
-**Void Linux** — packaging under `packaging/void` (template) but **not yet
-tested** (no Void system available); treat it as work-in-progress.
+**Void Linux** — packaging under `packaging/void` (template + `build-xbps.sh`),
+**tested** against the official `xbps-src` buildkit. Void ships `wlroots0.19`
+and `scenefx` (0.4) in the repos — the template's runtime deps are collected
+by the repo build (incl. `xorg-server-xwayland`). Build and recipe in
+`packaging/void/README.md`.
+
+**Fedora 44** — dwlm also builds against **wlroots 0.20** (with scenefx 0.5).
+Fedora ships `wlroots` 0.20 but no scenefx, so `packaging/fedora` snap-builds
+scenefx 0.5 and dwlm as RPMs (`build-dwlm.sh`, tested): `scenefx`, `scenefx-devel`
+and `dwlm` `.rpm` files plus a full recipe in `packaging/fedora/README.md`. The
+wlroots 0.20 API changes (xwayland cursor buffer, corner radius, xdg-shell
+constants) are handled in `src/dwlm.c` behind `#if WLR_VERSION_0_20`.
 
 ## The philosophy
 
@@ -111,10 +121,13 @@ and `scenefx-0.2` from the AUR — full recipe in `packaging/arch/README.md`).
 On Alpine 3.24 use the APKBUILD under `packaging/alpine` (tested; builds against
 `wlroots0.19` and `scenefx-0.4` from the official repos — recipe and one-shot
 build script in `packaging/alpine/README.md`).
-On Void use `packaging/void` (untested).
-Alternatively build against a system wlroots 0.20 by setting
-`WLRROOTS = scenefx wlroots` in `config.mk` and installing a wlroots 0.20-
-compatible scenefx from the AUR / Void repos.
+On Void use the template under `packaging/void` (tested via `xbps-src`; recipe
+in `packaging/void/README.md`).
+On Fedora 44 there's no scenefx in the repos: `packaging/fedora` builds scenefx
+0.5 and dwlm from source as RPMs (`build-dwlm.sh`, tested).
+Alternatively build against a wlroots 0.20 system directly by setting
+`WLRROOTS = scenefx wlroots` (or `scenefx-0.5 wlroots-0.20`) in `config.mk`
+and installing a wlroots 0.20-compatible scenefx from the AUR / Void repos.
 
 Build and install:
 
@@ -153,7 +166,8 @@ CLI options:
 - **`Mod+Return`/`Mod+P` do nothing.** The default `termcmd`/`menucmd` are
   `foot` and `wmenu-run`; the compositor ships no applications. Install them
   (Debian: `sudo apt install foot wmenu`, Arch: `sudo pacman -S foot wmenu`,
-  Alpine: `apk add foot wmenu`).
+  Alpine: `apk add foot wmenu`, Void: `sudo xbps-install foot wmenu`,
+  Fedora: `sudo dnf install foot wmenu`).
 - **Cursor renders inverted/garbled on a VM (VirtIO, VMware).** Disable the
   KMS hardware cursor since wlroots would otherwise draw the cursor sprite on
   a virtual GPU: `Exec=/usr/bin/env WLR_NO_HARDWARE_CURSORS=1 dwlm`.
@@ -226,7 +240,8 @@ layout list.
 - `src/config_runtime.c` — TOML runtime config (scroll params + window rules)
 - `packaging/` — Debian (root `debian/`), Arch Linux (PKGBUILD + recipe
   README, tested), Alpine Linux (APKBUILD + recipe README + build script,
-  tested) and Void (template, untested) packaging
+  tested), Void Linux (template + build script, tested) and Fedora (RPM
+  specs + build script, tested) packaging
 - `.github/workflows/build.yml` — CI (Debian Trixie, zero-warnings + deb)
 - `dwlm.svg` — el logo de dwlm, basado en el logo original de DWM
 - `dwlm-banner.png` — banner del README
