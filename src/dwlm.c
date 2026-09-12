@@ -64,10 +64,15 @@
 #include <wlr/util/log.h>
 #include <wlr/util/region.h>
 #include <xkbcommon/xkbcommon.h>
+#include "xdg-shell-protocol.h"
 #ifdef XWAYLAND
 #include <wlr/xwayland.h>
 #include <xcb/xcb.h>
 #include <xcb/xcb_icccm.h>
+#if WLR_VERSION_0_20
+#include <wlr/interfaces/wlr_buffer.h>
+#include <drm_fourcc.h>
+#endif
 #endif
 
 #include "util.h"
@@ -2385,15 +2390,24 @@ resize(Client *c, struct wlr_box geo, int interact)
 	wlr_scene_node_set_position(&c->scene->node, c->geom.x, c->geom.y);
 	wlr_scene_node_set_position(&c->scene_surface->node, c->bw, c->bw);
 	wlr_scene_rect_set_size(c->border[0], c->geom.width, c->geom.height);
+#if WLR_VERSION_0_20
+	wlr_scene_rect_set_corner_radius(c->border[0], corner_radius);
+#else
 	wlr_scene_rect_set_corner_radius(c->border[0], corner_radius,
 			CORNER_LOCATION_ALL);
+#endif
 
 	/* Round the actual surface buffer node(s) of this client's scene tree */
 	wl_list_for_each_safe(it, tmp, &c->scene_surface->children, link) {
 		if (it->type == WLR_SCENE_NODE_BUFFER)
+#if WLR_VERSION_0_20
+			wlr_scene_buffer_set_corner_radius(wlr_scene_buffer_from_node(it),
+					c->isfullscreen ? 0 : corner_radius);
+#else
 			wlr_scene_buffer_set_corner_radius(wlr_scene_buffer_from_node(it),
 					c->isfullscreen ? 0 : corner_radius,
 					CORNER_LOCATION_ALL);
+#endif
 	}
 
 	/* this is a no-op if size hasn't changed */
@@ -3436,10 +3450,51 @@ sethints(struct wl_listener *listener, void *data)
 		client_set_border_color(c, urgentcolor);
 }
 
+#if WLR_VERSION_0_20
+struct xwayland_cursor_buffer {
+	struct wlr_buffer base;
+	struct wlr_xcursor_image *image;
+};
+
+static void
+xwayland_cursor_buffer_destroy(struct wlr_buffer *wb)
+{
+	free(wb);
+}
+
+static bool
+xwayland_cursor_buffer_begin(struct wlr_buffer *wb, uint32_t flags,
+		void **data, uint32_t *format, size_t *stride)
+{
+	struct xwayland_cursor_buffer *cb =
+			(struct xwayland_cursor_buffer *)wb;
+	if (flags & WLR_BUFFER_DATA_PTR_ACCESS_WRITE)
+		return false;
+	*data = cb->image->buffer;   /* packed DRM_FORMAT_ARGB8888 pixels */
+	*format = DRM_FORMAT_ARGB8888;
+	*stride = cb->image->width * 4;
+	return true;
+}
+
+static void
+xwayland_cursor_buffer_end(struct wlr_buffer *wb)
+{
+}
+
+static const struct wlr_buffer_impl xwayland_cursor_buffer_impl = {
+	.destroy = xwayland_cursor_buffer_destroy,
+	.begin_data_ptr_access = xwayland_cursor_buffer_begin,
+	.end_data_ptr_access = xwayland_cursor_buffer_end,
+};
+#endif
+
 void
 xwaylandready(struct wl_listener *listener, void *data)
 {
 	struct wlr_xcursor *xcursor;
+#if WLR_VERSION_0_20
+	static struct wlr_buffer *xwayland_cursor_buf;
+#endif
 	xcb_connection_t *xc = xcb_connect(xwayland->display_name, NULL);
 	int err = xcb_connection_has_error(xc);
 	if (err) {
@@ -3458,11 +3513,28 @@ xwaylandready(struct wl_listener *listener, void *data)
 	wlr_xwayland_set_seat(xwayland, seat);
 
 	/* Set the default XWayland cursor to match the rest of dwl. */
-	if ((xcursor = wlr_xcursor_manager_get_xcursor(cursor_mgr, "default", 1)))
+	if ((xcursor = wlr_xcursor_manager_get_xcursor(cursor_mgr, "default", 1))) {
+#if WLR_VERSION_0_20
+		/* wlroots >= 0.20 takes a wlr_buffer; the xcursor image only exposes
+		 * raw ARGB8888 pixels, so wrap them in a read-only wlr_buffer. */
+		if (!xwayland_cursor_buf) {
+			struct xwayland_cursor_buffer *cb =
+					calloc(1, sizeof(*cb));
+			wlr_buffer_init(&cb->base, &xwayland_cursor_buffer_impl,
+					xcursor->images[0]->width, xcursor->images[0]->height);
+			cb->image = xcursor->images[0];
+			xwayland_cursor_buf = &cb->base;
+		}
+		wlr_xwayland_set_cursor(xwayland, xwayland_cursor_buf,
+				xcursor->images[0]->hotspot_x,
+				xcursor->images[0]->hotspot_y);
+#else
 		wlr_xwayland_set_cursor(xwayland,
 				xcursor->images[0]->buffer, xcursor->images[0]->width * 4,
 				xcursor->images[0]->width, xcursor->images[0]->height,
 				xcursor->images[0]->hotspot_x, xcursor->images[0]->hotspot_y);
+#endif
+	}
 
 	xcb_disconnect(xc);
 }

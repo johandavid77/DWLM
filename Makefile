@@ -25,6 +25,9 @@ WLR_VERSION := $(shell $(PKG_CONFIG) --modversion $(lastword $(WLRROOTS)) 2>/dev
 ifneq ($(filter 0.19% 0.20%,$(WLR_VERSION)),)
 DWLCPPFLAGS += -DWLR_VERSION_0_19
 endif
+ifneq ($(filter 0.20%,$(WLR_VERSION)),)
+DWLCPPFLAGS += -DWLR_VERSION_0_20
+endif
 
 # source layout (dwlm keeps sources in src/, packaging in packaging/)
 SRC = src
