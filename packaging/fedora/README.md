@@ -47,8 +47,8 @@ sudo dnf install ./scenefx-0.5-1.fc44.x86_64.rpm \
 ```
 
 `wlroots`, `xwayland` and the rest are pulled in from the Fedora repos
-automatically. Then log in via the `dwlm.desktop` wayland session (`Install
-JS` bar style), or launch with:
+automatically. Then log in via the `dwlm.desktop` wayland session (picked up
+by ly, GDM, SDDM…), or launch with:
 
 ```sh
 dbus-run-session -- dwlm

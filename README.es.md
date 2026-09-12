@@ -10,6 +10,16 @@
 
 **dwm para Wayland con modo de scroll estilo Niri.**
 
+Probado en cinco distros (la receta de cada una está en [`packaging/`](packaging/)):
+
+| Distro | Stack (wlroots / scenefx) | Paquete           | Estado |
+|--------|---------------------------|-------------------|--------|
+| Debian 13 (Trixie) | 0.18 / 0.2 | `.deb` (+ GitHub Release, CI) | probado |
+| Arch Linux (2026) | 0.18 / 0.2 (AUR) | PKGBUILD | probado |
+| Alpine 3.24 | 0.19 / 0.4 | `.apk` | probado |
+| Void Linux | 0.19 / 0.4 | `.xbps` (xbps-src) | probado |
+| Fedora 44 | 0.20 / 0.5 (build desde fuente) | `.rpm` | probado |
+
 ## Instalación
 
 **Debian 13 (Trixie)** — hay un `.deb` ya preparado adjunto a
@@ -164,6 +174,53 @@ Opciones de línea de comandos:
 - `dwlm -d` — logging completo de wlroots con debug
 - `dwlm -v` — imprime el logo y la versión, y sale
 
+## Configuración en runtime
+
+Además de la configuración en tiempo de compilación (`src/config.def.h`),
+dwlm lee un overlay TOML de `$XDG_CONFIG_HOME/dwlm/config.toml` (por defecto
+`~/.config/dwlm/config.toml`) y lo **re-aplica en vivo en cada `SIGHUP`** —
+colores, gaps, presets de ancho y el comportamiento del scroll cambian sin
+reiniciar:
+
+```sh
+kill -HUP "$(pgrep dwlm)"
+```
+
+Referencia completa (las claves son opcionales; las omitidas conservan los
+defaults de compilación):
+
+```toml
+[general]
+borderpx         = 3               # grosor del anillo de foco (px)
+corner_radius    = 10              # esquinas redondeadas (scenefx)
+gap              = 12.0            # separación entre columnas/ventanas (px)
+outer_gap        = 12.0            # margen alrededor del área de tiling (px)
+width_min        = 0.20            # topes de grow/shrink (fracción de la franja)
+width_max        = 0.80
+presets          = [0.33, 0.50, 0.67]
+mouse_scroll     = 1               # 0/1: rueda/touchpad panean la franja en scroll
+pixels_per_notch = 80.0            # px de la franja por notch de rueda
+continuous_speed = 1.5             # sensibilidad del touchpad / deltas continuos
+anim_ms          = 250             # duración de la animación de vista (0 = salta)
+anim_ease        = 1               # 0: lineal, 1: cubic ease-in-out
+
+[colors]                           # #rrggbb o #rrggbbaa
+root    = "#222222"
+border  = "#222222"                # anillo de foco en reposo (se mezcla con root)
+focus   = "#66c2ff"
+urgent  = "#ff0000"
+
+[rules.1]                          # reglas de ventana en runtime (hasta 24, 1-based)
+app_id     = "foot"                # coincidencia por substring del app id
+title      = "Calculator"          # substring opcional en el título
+isfloating = true                  # arrancar esta app flotando
+tags       = 1                     # máscara de tags opcional
+```
+
+Las reglas de `[rules.N]` se aplican **después** de las reglas compiladas,
+así que el runtime gana. El parser no tiene dependencias y el archivo se
+procesa en el loop principal (nada async dentro del handler de señal).
+
 ## Solución de problemas
 
 - **`Mod+Return`/`Mod+P` no hacen nada.** El `termcmd`/`menucmd` por defecto
@@ -241,7 +298,8 @@ lista de layouts.
   unidad de traducción que `dwlm.c`, como hace dwl)
 - `src/config.def.h` — configuración en tiempo de compilación
 - `src/config_runtime.c` — config TOML en tiempo de ejecución (parámetros del
-  scroll + reglas de ventana)
+  scroll + reglas de ventana; se recarga en vivo con `SIGHUP`, ver
+  [Configuración en runtime](#configuración-en-runtime))
 - `packaging/` — Debian (`debian/` en la raíz), Arch Linux (PKGBUILD + receta
   README, probado), Alpine Linux (APKBUILD + receta README + script de build,
   probado), Void Linux (template + script de build, probado) y Fedora (specs
@@ -252,6 +310,8 @@ lista de layouts.
 - `dwlm-social.png` — imagen de vista previa social (ajustes del repo en GitHub)
 - `README.es.md` — este documento en español
 - `ROADMAP.md` — hoja de ruta de desarrollo
+- `CHANGELOG.md` — registro de cambios
+- `src/dwlm.1` — man page (ver también la nota del reload con `SIGHUP`)
 
 ## Barra de estado
 

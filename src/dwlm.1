@@ -56,8 +56,12 @@ by editing the sources, in particular
 .Pa src/config.def.h
 (writes to a local
 .Pa src/config.h
-are compiled in).  Runtime rules and scroll parameters can also be tweaked
-from a TOML file; see
+are compiled in).  Runtime scroll parameters, window rules and colors can
+also be tweaked from a TOML configuration file which is re-applied live on
+.Dv SIGHUP
+(no restart needed); see
+.Pa \(ti/.config/dwlm/config.toml
+and
 .Pa src/config_runtime.c .
 .Pp
 In the keybindings below Demlo (Mod) is the Super/Logo key:
@@ -178,13 +182,40 @@ server.
 .It Pa src/config.def.h
 Default compile-time configuration and keybindings.
 .It Pa src/config_runtime.c
-TOML runtime configuration of scroll parameters and window rules.
+TOML runtime configuration of scroll parameters, window rules and colors.
+.It Pa \(ti/.config/dwlm/config.toml
+Optional TOML overlay, re-applied live on
+.Dv SIGHUP :
+keys
+.Ar borderpx , Ar corner_radius , Ar gap , Ar outer_gap , Ar width_min ,
+.Ar width_max , Ar presets , Ar mouse_scroll , Ar pixels_per_notch ,
+.Ar continuous_speed , Ar anim_ms , Ar anim_ease ,
+.Ar root / Ar border / Ar focus / Ar urgent
+colors and
+.Ar [rules.N]
+window rules.
 .El
 .Sh EXAMPLES
 Start
 .Nm
 with a terminal and a bar shell client:
 .Dl dwlm -s "foot"
+.Pp
+Change the focus ring to a red 2 px border, drop the gap and let Calculator
+float, then reload live:
+.Bd -literal -offset indent
+cat \(aq\(aq \(ti/.config/dwlm/config.toml
+[general]
+borderpx       = 2
+gap            = 4
+[colors]
+focus          = "#ff6666"
+[rules.1]
+app_id         = "calc"
+isfloating     = true
+\(aq\(aq
+kill -HUP "$(pgrep dwlm)"
+.Ed
 .Sh SEE ALSO
 .Xr foot 1 ,
 .Xr wmenu 1 ,

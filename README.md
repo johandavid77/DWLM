@@ -10,6 +10,16 @@
 
 **dwm for Wayland with a Niri-style scroll mode.**
 
+Tested across five distros (see [`packaging/`](packaging/) for each recipe):
+
+| Distro | Stack (wlroots / scenefx) | Package           | Status  |
+|--------|---------------------------|-------------------|---------|
+| Debian 13 (Trixie) | 0.18 / 0.2 | `.deb` (+ GitHub Release, CI) | tested |
+| Arch Linux (2026) | 0.18 / 0.2 (AUR) | PKGBUILD | tested |
+| Alpine 3.24 | 0.19 / 0.4 | `.apk` | tested |
+| Void Linux | 0.19 / 0.4 | `.xbps` (xbps-src) | tested |
+| Fedora 44 | 0.20 / 0.5 (snap-built) | `.rpm` | tested |
+
 ## Install
 
 **Debian 13 (Trixie)** — a ready-made `.deb` is attached to
@@ -161,6 +171,53 @@ CLI options:
 - `dwlm -d` — full wlroots debug logging
 - `dwlm -v` — print the logo and version, then exit
 
+## Runtime configuration
+
+Besides the compile-time config (`src/config.def.h`), dwlm reads a TOML
+overlay from `$XDG_CONFIG_HOME/dwlm/config.toml` (defaults to
+`~/.config/dwlm/config.toml`) and re-applies it **live on every `SIGHUP`** —
+colors, gaps, width presets and scroll behavior all change without
+restarting:
+
+```sh
+kill -HUP "$(pgrep dwlm)"
+```
+
+Complete reference (keys are optional; omitted ones keep the compiled
+default):
+
+```toml
+[general]
+borderpx         = 3               # focus ring thickness (px)
+corner_radius    = 10              # rounded corners (scenefx)
+gap              = 12.0            # gap between columns/windows (px)
+outer_gap        = 12.0            # margin around the tiling area (px)
+width_min        = 0.20            # grow/shrink clamps (fraction of strip)
+width_max        = 0.80
+presets          = [0.33, 0.50, 0.67]
+mouse_scroll     = 1               # 0/1: wheel/touchpad pan the strip in scroll mode
+pixels_per_notch = 80.0            # strip px scrolled per wheel notch
+continuous_speed = 1.5             # touchpad / continuous delta sensitivity
+anim_ms          = 250             # viewport animation duration (0 = snap)
+anim_ease        = 1               # 0: linear, 1: cubic ease-in-out
+
+[colors]                           # #rrggbb or #rrggbbaa
+root    = "#222222"
+border  = "#222222"                # focus ring rest state (blends with root)
+focus   = "#66c2ff"
+urgent  = "#ff0000"
+
+[rules.1]                          # runtime window rules (up to 24, 1-based)
+app_id     = "foot"                # substring match on the window app id
+title      = "Calculator"          # optional substring match on the title
+isfloating = true                  # start this app floating
+tags       = 1                     # optional tag mask
+```
+
+Rules under `[rules.N]` are matched **after** the compiled rules, so the
+runtime values win. The parser is dependency-free and the file is drained in
+the main loop (no async work inside the signal handler).
+
 ## Troubleshooting
 
 - **`Mod+Return`/`Mod+P` do nothing.** The default `termcmd`/`menucmd` are
@@ -237,7 +294,8 @@ layout list.
 - `src/scroll.c` / `src/scroll.h` — the scroll layout (compiled into the same
   translation unit as `dwlm.c`, in the spirit of upstream dwl)
 - `src/config.def.h` — compile-time configuration
-- `src/config_runtime.c` — TOML runtime config (scroll params + window rules)
+- `src/config_runtime.c` — TOML runtime config (scroll params + window rules;
+  live-reloaded on `SIGHUP`, see [Runtime configuration](#runtime-configuration))
 - `packaging/` — Debian (root `debian/`), Arch Linux (PKGBUILD + recipe
   README, tested), Alpine Linux (APKBUILD + recipe README + build script,
   tested), Void Linux (template + build script, tested) and Fedora (RPM
@@ -247,6 +305,8 @@ layout list.
 - `dwlm-banner.png` — banner del README
 - `dwlm-social.png` — social preview image (GitHub repo settings)
 - `ROADMAP.md` — development roadmap
+- `CHANGELOG.md` — changelog
+- `src/dwlm.1` — man page (see also the `SIGHUP` reload note)
 
 ## Status bar
 
